@@ -1,26 +1,91 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* ── Bolão Celeste Design Tokens (Tailwind v4) ───────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+	/* Colors */
+	--color-primary: #2D3FEF;
+	--color-accent: #F59E0B;
+	--color-background-light: #f6f6f8;
+	--color-background-dark: #050512;
+	--color-surface-dark: #0D0D1F;
+	--color-surface-light: #ffffff;
+	--color-success: #10B981;
+
+	/* Typography */
+	--font-display: "Manrope", sans-serif;
+
+	/* Border Radius */
+	--radius: 0.5rem;
+	--radius-lg: 1rem;
+	--radius-xl: 1.5rem;
+	--radius-full: 9999px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Custom Utilities ─────────────────────────────────────────── */
+
+.glass-panel {
+	background: rgba(13, 13, 31, 0.7);
+	backdrop-filter: blur(12px);
+	border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.consensus-bar {
+	background: linear-gradient(90deg,
+			#2d3fef 0%,
+			#2d3fef var(--percent),
+			#1e1e3f var(--percent),
+			#1e1e3f 100%);
+}
+
+.pulse-live {
+	animation: pulse-live 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-live {
+
+	0%,
+	100% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0.5;
+	}
+}
+
+/* ── Leaderboard Utilities ────────────────────────────────────── */
+
+.glow-gold {
+	box-shadow: 0 0 20px rgba(245, 158, 11, 0.35),
+		0 0 40px rgba(245, 158, 11, 0.15);
+}
+
+.bar-fill {
+	width: var(--bar-width, 0%);
+	animation: bar-grow 0.8s ease-out forwards;
+}
+
+@keyframes bar-grow {
+	from {
+		width: 0%;
+	}
+	to {
+		width: var(--bar-width, 0%);
+	}
+}
+
+/* ── Starry sky background ────────────────────────────────────── */
+.starry-bg {
+	background-image:
+		radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0, 0, 0, 0)),
+		radial-gradient(1px 1px at 40px 70px, rgba(255, 255, 255, 0.8), rgba(0, 0, 0, 0)),
+		radial-gradient(2px 2px at 50px 160px, rgba(255, 255, 255, 0.9), rgba(0, 0, 0, 0)),
+		radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.6), rgba(0, 0, 0, 0)),
+		radial-gradient(2px 2px at 130px 80px, #ffffff, rgba(0, 0, 0, 0)),
+		radial-gradient(1px 1px at 160px 120px, rgba(255, 255, 255, 0.7), rgba(0, 0, 0, 0)),
+		radial-gradient(1px 1px at 200px 10px, rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0)),
+		radial-gradient(1.5px 1.5px at 240px 90px, #ffffff, rgba(0, 0, 0, 0)),
+		radial-gradient(1px 1px at 280px 140px, rgba(255, 255, 255, 0.8), rgba(0, 0, 0, 0));
+	background-repeat: repeat;
+	background-size: 300px 300px;
 }
