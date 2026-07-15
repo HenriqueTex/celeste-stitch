@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
-import Header from "@/components/Header";
-import MobileNav from "@/components/MobileNav";
+import { AuthProvider } from "@/components/AuthContext";
+import LayoutShell from "@/components/LayoutShell";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -33,20 +33,14 @@ export default function RootLayout({
 			<body
 				className={`${manrope.variable} font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen relative overflow-x-hidden antialiased`}
 			>
-				{/* Starry sky background */}
-				<div className="absolute inset-0 z-0 pointer-events-none starry-bg" />
+				<AuthProvider>
+					{/* Starry sky background */}
+					<div className="absolute inset-0 z-0 pointer-events-none starry-bg" />
 
-				<div className="relative z-10 flex flex-col min-h-screen">
-					<Header />
-
-					<main className="flex-1 flex justify-center py-6 px-4 sm:px-8">
-						<div className="w-full max-w-[1200px]">
-							{children}
-						</div>
-					</main>
-
-					<MobileNav />
-				</div>
+					<div className="relative z-10 flex flex-col min-h-screen">
+						<LayoutShell>{children}</LayoutShell>
+					</div>
+				</AuthProvider>
 			</body>
 		</html>
 	);
