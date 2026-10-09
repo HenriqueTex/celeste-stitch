@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm ci --include=dev && next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
@@ -31,6 +31,7 @@
     "date-fns": "^4.1.0",
     "lucide-react": "^1.7.0",
     "next": "16.1.6",
+    "next-themes": "^0.4.6",
     "react": "19.2.3",
     "react-day-picker": "^9.14.0",
     "react-dom": "19.2.3",
