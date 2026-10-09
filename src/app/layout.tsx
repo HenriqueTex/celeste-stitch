@@ -14,7 +14,7 @@ const manrope = Manrope({
 export const metadata: Metadata = {
 	title: "Bolão Celeste - Comunidade de Torcedores",
 	description:
-		"Junte-se a mais de 50.000 torcedores palpitando nos jogos do Cruzeiro.",
+		"Acompanhe os jogos do Cruzeiro, escolha seus placares e participe da comunidade Bolão Celeste.",
 };
 
 export default function RootLayout({
@@ -35,9 +35,6 @@ export default function RootLayout({
 				className={`${manrope.variable} font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen relative overflow-x-hidden antialiased`}
 			>
 				<AuthProvider>
-					{/* Starry sky background */}
-					<div className="absolute inset-0 z-0 pointer-events-none starry-bg" />
-
 					<div className="relative z-10 flex flex-col min-h-screen">
 						<LayoutShell>{children}</LayoutShell>
 					</div>

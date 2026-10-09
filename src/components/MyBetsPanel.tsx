@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import MaterialIcon from "@/components/icons/MaterialIcon";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/components/AuthContext";
+import { useBetting } from "@/components/BettingContext";
 import { apiFetch } from "@/lib/api";
 import { formatCurrency, formatShortDate } from "@/lib/format";
 import type { BetItem } from "@/lib/types";
@@ -28,6 +29,7 @@ const resultStyles = {
 
 export default function MyBetsPanel() {
 	const { isLoggedIn, token } = useAuth();
+	const { openCheckout } = useBetting();
 	const [bets, setBets] = useState<BetItem[]>([]);
 	const [error, setError] = useState("");
 	const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -35,22 +37,37 @@ export default function MyBetsPanel() {
 	useEffect(() => {
 		if (!token) return;
 
-		void apiFetch<BetItem[]>("/account/bets", { token })
-			.then((items) => {
-				setBets(items);
-				setError("");
-			})
-			.catch((err) => {
-				setBets([]);
-				setError(err instanceof Error ? err.message : "Falha ao carregar apostas.");
-			});
+		let cancelled = false;
+		const load = () =>
+			void apiFetch<BetItem[]>("/account/bets", { token })
+				.then((items) => {
+					if (cancelled) return;
+					setBets(items);
+					setError("");
+				})
+				.catch((err) => {
+					if (cancelled) return;
+					setBets([]);
+					setError(
+						err instanceof Error ? err.message : "Falha ao carregar apostas.",
+					);
+				});
+		load();
+		window.addEventListener("celeste:payment-confirmed", load);
+		return () => {
+			cancelled = true;
+			window.removeEventListener("celeste:payment-confirmed", load);
+		};
 	}, [token]);
 
 	const stats = useMemo(() => {
 		const totalPoints = bets.reduce((sum, item) => sum + item.points, 0);
-		const exactCount = bets.filter((item) => item.resultStatus === "exact").length;
+		const exactCount = bets.filter(
+			(item) => item.resultStatus === "exact",
+		).length;
 		const settled = bets.filter((item) => item.resultStatus).length;
-		const accuracy = settled === 0 ? 0 : Math.round((exactCount / settled) * 100);
+		const accuracy =
+			settled === 0 ? 0 : Math.round((exactCount / settled) * 100);
 		return { totalPoints, exactCount, accuracy };
 	}, [bets]);
 
@@ -59,15 +76,24 @@ export default function MyBetsPanel() {
 			<>
 				<section className="glass-panel mx-auto max-w-2xl rounded-2xl p-8 text-center">
 					<MaterialIcon name="wallet" className="text-4xl text-accent" />
-					<h1 className="mt-3 text-2xl font-black uppercase italic">Meus Palpites</h1>
+					<h1 className="mt-3 text-2xl font-black uppercase italic">
+						Meus Palpites
+					</h1>
 					<p className="mt-2 text-sm text-slate-300">
 						Entre para acompanhar seus palpites, pagamentos e premiações.
 					</p>
-					<button onClick={() => setAuthModalOpen(true)} className="mt-5 rounded-xl bg-primary px-6 py-3 font-bold text-white hover:bg-blue-600 focus-visible:outline-2 focus-visible:outline-white transition-colors">
+					<button
+						onClick={() => setAuthModalOpen(true)}
+						className="mt-5 rounded-xl bg-primary px-6 py-3 font-bold text-white hover:bg-blue-600 focus-visible:outline-2 focus-visible:outline-white transition-colors"
+					>
 						Entrar na minha conta
 					</button>
 				</section>
-				<AuthModal open={authModalOpen} initialView="login" onClose={() => setAuthModalOpen(false)} />
+				<AuthModal
+					open={authModalOpen}
+					initialView="login"
+					onClose={() => setAuthModalOpen(false)}
+				/>
 			</>
 		);
 	}
@@ -126,58 +152,89 @@ export default function MyBetsPanel() {
 				)}
 
 				{bets.map((bet) => {
-					const style = bet.resultStatus ? resultStyles[bet.resultStatus] : null;
+					const style = bet.resultStatus
+						? resultStyles[bet.resultStatus]
+						: null;
 					return (
 						<div
 							key={bet.id}
-						className="group flex flex-col gap-3 sm:grid sm:grid-cols-[1fr_90px_120px_110px_90px] sm:items-center px-4 sm:px-6 py-4 border-b border-white/[0.03] hover:bg-white/5 transition-colors"
+							className="group flex flex-col gap-3 sm:grid sm:grid-cols-[1fr_90px_120px_110px_90px] sm:items-center px-4 sm:px-6 py-4 border-b border-white/[0.03] hover:bg-white/5 transition-colors"
 						>
-						<div className="min-w-0">
+							<div className="min-w-0">
 								<p className="font-bold text-sm">
 									{bet.match.homeTeam} vs {bet.match.awayTeam}
 								</p>
 								<p className="text-xs text-slate-300">
-									{formatShortDate(bet.match.scheduledAt)} · {bet.tickets} bilhete(s)
+									{formatShortDate(bet.match.scheduledAt)} · {bet.tickets}{" "}
+									bilhete(s)
 								</p>
 							</div>
 
-						<div className="grid grid-cols-2 gap-3 sm:contents">
-							<div className="text-sm font-black italic sm:text-center">
-								<span className="block sm:hidden text-xs not-italic font-medium text-slate-300">Palpite</span>
-								{bet.homeScorePrediction} - {bet.awayScorePrediction}
-							</div>
-
-							<div className="sm:text-center">
-								<span className="block sm:hidden text-xs text-slate-300">Pagamento</span>
-								<p className="text-xs font-bold uppercase text-blue-300">
-									{bet.payment?.status === "confirmed" ? "Confirmado" : "Pendente"}
-								</p>
-								<p className="text-xs text-slate-300">
-									{formatCurrency(bet.totalAmount)}
-								</p>
-							</div>
-
-							<div className="flex flex-col items-start sm:items-center sm:justify-center">
-								<span className="block sm:hidden text-xs text-slate-300">Resultado</span>
-								{style ? (
-									<span
-										className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold border ${style.cls}`}
-									>
-										<MaterialIcon name={style.icon} className="text-xs" />
-										{style.label}
+							<div className="grid grid-cols-2 gap-3 sm:contents">
+								<div className="text-sm font-black italic sm:text-center">
+									<span className="block sm:hidden text-xs not-italic font-medium text-slate-300">
+										Palpite
 									</span>
-								) : (
-									<span className="text-xs font-bold text-slate-300 uppercase">
-										Em aberto
-									</span>
-								)}
-							</div>
+									{bet.homeScorePrediction} - {bet.awayScorePrediction}
+								</div>
 
-							<div className="text-xs font-black italic sm:text-right">
-								<span className="block sm:hidden text-xs not-italic font-medium text-slate-300">Pontos</span>
-								{bet.points > 0 ? `+${bet.points}` : bet.points}
+								<div className="sm:text-center">
+									<span className="block sm:hidden text-xs text-slate-300">
+										Pagamento
+									</span>
+									<p className="text-xs font-bold uppercase text-blue-300">
+										{bet.payment?.status === "confirmed"
+											? "Confirmado"
+											: bet.payment?.status === "cancelled"
+												? "Cancelado"
+												: "Pendente"}
+									</p>
+									<p className="text-xs text-slate-300">
+										{formatCurrency(bet.totalAmount)}
+									</p>
+									{bet.payment && (
+										<button
+											className="text-link"
+											onClick={() =>
+												openCheckout(bet.match, {
+													match: bet.match,
+													payment: bet.payment!,
+													bets: bets.filter(
+														(item) => item.paymentId === bet.paymentId,
+													),
+												})
+											}
+										>
+											Ver pedido
+										</button>
+									)}
+								</div>
+
+								<div className="flex flex-col items-start sm:items-center sm:justify-center">
+									<span className="block sm:hidden text-xs text-slate-300">
+										Resultado
+									</span>
+									{style ? (
+										<span
+											className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold border ${style.cls}`}
+										>
+											<MaterialIcon name={style.icon} className="text-xs" />
+											{style.label}
+										</span>
+									) : (
+										<span className="text-xs font-bold text-slate-300 uppercase">
+											Em aberto
+										</span>
+									)}
+								</div>
+
+								<div className="text-xs font-black italic sm:text-right">
+									<span className="block sm:hidden text-xs not-italic font-medium text-slate-300">
+										Pontos
+									</span>
+									{bet.points > 0 ? `+${bet.points}` : bet.points}
+								</div>
 							</div>
-						</div>
 						</div>
 					);
 				})}

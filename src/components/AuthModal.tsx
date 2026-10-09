@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import MaterialIcon from "@/components/icons/MaterialIcon";
+import { ArrowLeft, LogIn, Network, UserRoundPlus, X } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
 import { useModalAccessibility } from "@/hooks/use-modal-accessibility";
 
@@ -131,7 +131,7 @@ export default function AuthModal({
 
 	return (
 		<div
-			className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+			className="client-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
 			onClick={resetAndClose}
 		>
 			<div
@@ -148,13 +148,13 @@ export default function AuthModal({
 					className="absolute top-4 right-4 size-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
 					aria-label="Fechar"
 				>
-					<MaterialIcon name="close" className="text-sm" />
+					<X size={16} aria-hidden="true" />
 				</button>
 
 				{view === "options" && (
 					<div className="flex flex-col items-center text-center">
 						<div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-							<MaterialIcon name="hub" className="text-primary text-3xl" />
+							<Network size={30} className="text-primary" aria-hidden="true" />
 						</div>
 						<h3 id={titleId} className="font-black uppercase italic text-lg mb-1">
 							Bolão Celeste
@@ -168,7 +168,7 @@ export default function AuthModal({
 							disabled={loading}
 							className="w-full py-3.5 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mb-3 disabled:opacity-60"
 						>
-							<MaterialIcon name="login" className="text-lg" />
+							<LogIn size={18} aria-hidden="true" />
 							Entrar na Conta
 						</button>
 						<button
@@ -176,7 +176,7 @@ export default function AuthModal({
 							disabled={loading}
 							className="w-full py-3.5 border border-white/10 hover:bg-white/5 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
 						>
-							<MaterialIcon name="person_add" className="text-lg" />
+							<UserRoundPlus size={18} aria-hidden="true" />
 							Criar Conta
 						</button>
 					</div>
@@ -191,7 +191,7 @@ export default function AuthModal({
 							}}
 							className="flex items-center gap-1 text-xs text-slate-300 hover:text-slate-300 mb-4 transition-colors"
 						>
-							<MaterialIcon name="arrow_back" className="text-sm" />
+							<ArrowLeft size={14} aria-hidden="true" />
 							Voltar
 						</button>
 
@@ -248,7 +248,7 @@ export default function AuthModal({
 							}}
 							className="flex items-center gap-1 text-xs text-slate-300 hover:text-slate-300 mb-4 transition-colors"
 						>
-							<MaterialIcon name="arrow_back" className="text-sm" />
+							<ArrowLeft size={14} aria-hidden="true" />
 							Voltar
 						</button>
 

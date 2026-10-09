@@ -1,239 +1,256 @@
 "use client";
+import { useEffect, useState } from "react";
+import { ArrowRight, Clock3, ChevronDown } from "lucide-react";
+import ActivePool from "@/components/ActivePool";
+import ScorePicker, { validScore } from "@/components/ScorePicker";
+import TeamBadge from "@/components/TeamBadge";
+import { useBetting } from "@/components/BettingContext";
+import { useResource } from "@/hooks/use-resource";
+import { formatCurrency, formatMatchDate } from "@/lib/format";
+import type { HomeResponse, MatchItem } from "@/lib/types";
 
-import { useEffect, useMemo, useState } from "react";
-import MaterialIcon from "@/components/icons/MaterialIcon";
-import BetModal from "@/components/BetModal";
-import { apiFetch } from "@/lib/api";
-import { formatCurrency, formatDateTime } from "@/lib/format";
-import type { MatchItem } from "@/lib/types";
-
-function shortCode(name: string) {
-	return name.slice(0, 3).toUpperCase();
+export function LoadingMatch() {
+	return (
+		<div className="client-panel match-skeleton" role="status">
+			<span className="sr-only">Carregando partidas…</span>
+			<div className="skeleton-line" />
+			<div className="skeleton-teams">
+				<span />
+				<span />
+			</div>
+			<div className="skeleton-line" />
+			<div className="skeleton-button" />
+		</div>
+	);
 }
 
-export default function MatchPrediction() {
-	const [homeScore, setHomeScore] = useState(2);
-	const [awayScore, setAwayScore] = useState(0);
-	const [betOpen, setBetOpen] = useState(false);
-	const [matches, setMatches] = useState<MatchItem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [currentTime, setCurrentTime] = useState(0);
-
+export function MatchWorkspace({
+	matches,
+	distribution,
+}: {
+	matches: MatchItem[];
+	distribution?: HomeResponse["poolDistribution"];
+}) {
+	const [selectedId, setSelectedId] = useState<number | null>(() => {
+		const time = Date.now();
+		const upcoming = matches.filter(
+			(item) => new Date(item.scheduledAt).getTime() > time,
+		);
+		return (
+			(
+				upcoming.find(
+					(item) =>
+						item.status === "open" &&
+						new Date(item.bettingDeadlineAt).getTime() > time,
+				) ?? upcoming[0]
+			)?.id ?? null
+		);
+	});
+	const [now, setNow] = useState(() => Date.now());
+	const { linesFor, updateLines, openCheckout, orderFor, setActiveMatch } =
+		useBetting();
 	useEffect(() => {
-		void apiFetch<MatchItem[]>("/matches/active")
-			.then((items) => {
-				setMatches(items);
-				setCurrentTime(Date.now());
-			})
-			.catch(() => setMatches([]))
-			.finally(() => setLoading(false));
-		const interval = setInterval(() => setCurrentTime(Date.now()), 30_000);
+		const interval = setInterval(() => setNow(Date.now()), 1000);
 		return () => clearInterval(interval);
 	}, []);
-
-	const match = useMemo(() => {
-		const upcoming = matches.filter((item) => new Date(item.scheduledAt).getTime() > currentTime);
-		return upcoming.find((item) => item.status === "open") ?? upcoming[0] ?? null;
-	}, [matches, currentTime]);
-
-	if (loading) {
-		return <section className="glass-panel min-h-48 animate-pulse rounded-2xl" aria-label="Carregando partidas" />;
-	}
-
-	if (!match) {
+	const available = matches.filter(
+		(item) => new Date(item.scheduledAt).getTime() > now,
+	);
+	const match =
+		matches.find((item) => item.id === selectedId) ??
+		available.find(
+			(item) =>
+				item.status === "open" &&
+				new Date(item.bettingDeadlineAt).getTime() > now,
+		) ??
+		available[0];
+	useEffect(() => {
+		setActiveMatch(match ?? null);
+	}, [match, setActiveMatch]);
+	if (!match)
 		return (
-			<section className="glass-panel rounded-2xl p-8 text-center">
-				<MaterialIcon name="event" className="text-4xl text-blue-300" />
-				<h2 className="mt-3 text-lg font-black uppercase italic">Próximas partidas em breve</h2>
-				<p className="mt-2 text-sm text-slate-300">
-					Quando uma nova partida for publicada, você poderá fazer seu palpite aqui.
+			<section className="client-panel empty-panel">
+				<Clock3 size={28} aria-hidden="true" />
+				<h2>A próxima partida vem aí</h2>
+				<p>
+					Assim que um novo jogo for publicado, você poderá escolher seu placar
+					aqui.
 				</p>
 			</section>
 		);
-	}
-	const isBettingOpen = match.status === "open" && new Date(match.bettingDeadlineAt).getTime() > currentTime;
-
-	const consensusTickets = match.stats.consensus?.tickets ?? 0;
-	const consensusPercent =
-		match.stats.tickets > 0
-			? Math.min(100, Math.round((consensusTickets / match.stats.tickets) * 100))
-		: 0;
-
-	return (
-		<>
-			<section>
-				<div className="glass-panel rounded-2xl overflow-hidden border-2 border-primary/30 relative">
-					<div className="absolute top-0 right-0 p-4">
-						<div className="bg-primary/20 text-primary text-[10px] font-black px-2 py-1 rounded-lg uppercase tracking-widest border border-primary/30">
-								{isBettingOpen ? "Próxima Partida" : "Apostas Fechadas"}
-						</div>
-					</div>
-
-					<div className="p-4 pt-10 sm:p-8">
-						<div className="flex flex-col items-center mb-6">
-							<div className="flex w-full items-center justify-center gap-3 sm:gap-20">
-								<div className="flex flex-col items-center gap-4">
-									<div className="size-16 sm:size-24 rounded-2xl sm:rounded-3xl bg-primary flex items-center justify-center shadow-[0_0_30px_rgba(45,63,239,0.4)] p-2 sm:p-3 overflow-hidden">
-										{match.homeTeamLogoUrl ? (
-											// eslint-disable-next-line @next/next/no-img-element
-											<img
-												src={match.homeTeamLogoUrl}
-												alt={match.homeTeam}
-												className="size-full object-contain"
-											/>
-										) : (
-											<MaterialIcon name="shield" className="text-5xl text-white" />
-										)}
-									</div>
-									<span className="font-black italic text-xl">
-										{shortCode(match.homeTeam)}
-									</span>
-								</div>
-
-								<div className="text-2xl sm:text-4xl font-black italic text-slate-400">VS</div>
-
-								<div className="flex flex-col items-center gap-4">
-									<div className="size-16 sm:size-24 rounded-2xl sm:rounded-3xl bg-surface-dark border-2 border-white/10 flex items-center justify-center p-2 sm:p-3 overflow-hidden">
-										{match.awayTeamLogoUrl ? (
-											// eslint-disable-next-line @next/next/no-img-element
-											<img
-												src={match.awayTeamLogoUrl}
-												alt={match.awayTeam}
-												className="size-full object-contain"
-											/>
-										) : (
-											<MaterialIcon
-												name="sports_soccer"
-												className="text-5xl text-slate-400"
-											/>
-										)}
-									</div>
-									<span className="font-black italic text-xl">
-										{shortCode(match.awayTeam)}
-									</span>
-								</div>
-							</div>
-							<p className="text-xs text-slate-500 mt-4">
-								{match.competition} · {formatDateTime(match.scheduledAt)}
-							</p>
-						</div>
-
-						<div className="space-y-4 mb-8">
-							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between text-xs font-black uppercase tracking-wider">
-								<span className="text-primary">
-									{match.stats.tickets > 0 ? `Palpite líder: ${consensusPercent}%` : "Aguardando palpites"}
-								</span>
-								<span className="text-slate-500">
-									encerramento {formatDateTime(match.bettingDeadlineAt)}
-								</span>
-							</div>
-							<div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden p-0.5">
-								<div
-									className="h-full bg-gradient-to-r from-primary to-blue-400 rounded-full transition-all duration-500"
-									style={{ width: `${consensusPercent}%` }}
-								/>
-							</div>
-
-							<div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center">
-								<div className="bg-white/5 rounded-lg p-2 border border-white/10">
-									<p className="text-xs text-slate-300 uppercase font-bold">
-										Placar Mais Votado
-									</p>
-									<p className="text-lg font-black italic text-primary">
-										{match.stats.consensus
-											? `${match.stats.consensus.homeScore} - ${match.stats.consensus.awayScore}`
-											: "—"}
-									</p>
-								</div>
-								<div className="bg-white/5 rounded-lg p-2 border border-white/10">
-									<p className="text-xs text-slate-300 uppercase font-bold">
-										Total Apostado
-									</p>
-									<p className="text-lg font-black italic">
-										{formatCurrency(match.stats.revenue)}
-									</p>
-								</div>
-								<div className="col-span-2 sm:col-span-1 bg-white/5 rounded-lg p-2 border border-white/10">
-									<p className="text-xs text-slate-300 uppercase font-bold">
-										Participantes
-									</p>
-									<p className="text-lg font-black italic">
-										{match.stats.participants.toLocaleString("pt-BR")}
-									</p>
-								</div>
-							</div>
-						</div>
-
-						<div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-							<div className="flex flex-col sm:flex-row gap-2 sm:gap-4 bg-white/5 p-2 rounded-2xl border border-white/10 w-full sm:w-auto">
-								<div className="flex items-center justify-between sm:justify-center gap-2">
-									<span className="sm:hidden text-xs font-bold text-slate-300">{shortCode(match.homeTeam)}</span>
-									<div className="flex items-center gap-2">
-									<button
-										aria-label={`Diminuir gols de ${match.homeTeam}`}
-										onClick={() => setHomeScore(Math.max(0, homeScore - 1))}
-										className="size-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-primary transition-colors"
-									>
-										<MaterialIcon name="remove" />
-									</button>
-									<span className="text-3xl font-black w-8 text-center italic">
-										{homeScore}
-									</span>
-									<button
-										aria-label={`Aumentar gols de ${match.homeTeam}`}
-										onClick={() => setHomeScore(homeScore + 1)}
-										className="size-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-primary transition-colors"
-									>
-										<MaterialIcon name="add" />
-									</button>
-									</div>
-								</div>
-
-								<div className="hidden sm:block h-8 w-px bg-white/10 mx-2" />
-
-								<div className="flex items-center justify-between sm:justify-center gap-2">
-									<span className="sm:hidden text-xs font-bold text-slate-300">{shortCode(match.awayTeam)}</span>
-									<div className="flex items-center gap-2">
-									<button
-										aria-label={`Diminuir gols de ${match.awayTeam}`}
-										onClick={() => setAwayScore(Math.max(0, awayScore - 1))}
-										className="size-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 transition-colors"
-									>
-										<MaterialIcon name="remove" />
-									</button>
-									<span className="text-3xl font-black w-8 text-center italic">
-										{awayScore}
-									</span>
-									<button
-										aria-label={`Aumentar gols de ${match.awayTeam}`}
-										onClick={() => setAwayScore(awayScore + 1)}
-										className="size-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 transition-colors"
-									>
-										<MaterialIcon name="add" />
-									</button>
-									</div>
-								</div>
-							</div>
-
-							<button
-								onClick={() => setBetOpen(true)}
-								disabled={!isBettingOpen}
-								className="w-full sm:w-64 py-5 bg-primary hover:bg-blue-600 text-white font-black text-lg rounded-2xl shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 uppercase italic tracking-tighter disabled:opacity-60 disabled:cursor-not-allowed"
-							>
-								{isBettingOpen ? "Fazer Meu Palpite" : "Apostas Encerradas"}
-								<MaterialIcon name="rocket_launch" className="font-black" />
-							</button>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<BetModal
-				open={betOpen}
-				onClose={() => setBetOpen(false)}
-				prediction={{ home: homeScore, away: awayScore }}
-				match={match}
-			/>
-		</>
+	const lines = linesFor(match.id);
+	const first = lines[0];
+	const isOpen =
+		match.status === "open" &&
+		new Date(match.scheduledAt).getTime() > now &&
+		new Date(match.bettingDeadlineAt).getTime() > now;
+	const choices = available.some((item) => item.id === match.id)
+		? available
+		: [match, ...available];
+	const order = orderFor(match.id);
+	const totalTickets = lines.reduce((sum, line) => sum + line.tickets, 0);
+	const valid = lines.every(
+		(line) => validScore(line.home) && validScore(line.away),
 	);
+	return (
+		<div className="match-workspace">
+			<section id="palpite" className="prediction-panel" aria-label="Escolha seu placar">
+				<div className="match-meta">
+					<span>{match.competition}</span>
+					<span className={isOpen ? "status-open" : "status-pending"}>
+						{isOpen ? "Palpites abertos" : "Palpites encerrados"}
+					</span>
+				</div>
+				<div className="match-date-row">
+					<time dateTime={match.scheduledAt}>
+						{formatMatchDate(match.scheduledAt)}
+					</time>
+					{choices.length > 1 && (
+						<label className="match-switch">
+							<span className="sr-only">Trocar partida</span>
+							<select
+								value={match.id}
+								onChange={(event) => setSelectedId(Number(event.target.value))}
+							>
+								{choices.map((item) => (
+									<option key={item.id} value={item.id}>
+										{item.homeTeam} × {item.awayTeam} ·{" "}
+										{formatMatchDate(item.scheduledAt)}
+									</option>
+								))}
+							</select>
+							<span aria-hidden="true">
+								Trocar partida <ChevronDown size={14} />
+							</span>
+						</label>
+					)}
+				</div>
+				<form
+					onSubmit={(event) => {
+						event.preventDefault();
+						if (order || (valid && isOpen)) openCheckout(match);
+					}}
+				>
+					<div className="score-board">
+						<div className="score-team">
+							<div className="team-identity">
+								<TeamBadge name={match.homeTeam} src={match.homeTeamLogoUrl} />
+								<h2>{match.homeTeam}</h2>
+							</div>
+							<ScorePicker
+								team={match.homeTeam}
+								value={first.home}
+								disabled={!isOpen || Boolean(order)}
+								onChange={(home) =>
+									updateLines(
+										match.id,
+										lines.map((line, index) =>
+											index === 0 ? { ...line, home } : line,
+										),
+									)
+								}
+							/>
+						</div>
+						<span className="score-separator" aria-hidden="true">
+							×
+						</span>
+						<div className="score-team">
+							<div className="team-identity">
+								<TeamBadge name={match.awayTeam} src={match.awayTeamLogoUrl} />
+								<h2>{match.awayTeam}</h2>
+							</div>
+							<ScorePicker
+								team={match.awayTeam}
+								value={first.away}
+								disabled={!isOpen || Boolean(order)}
+								onChange={(away) =>
+									updateLines(
+										match.id,
+										lines.map((line, index) =>
+											index === 0 ? { ...line, away } : line,
+										),
+									)
+								}
+							/>
+						</div>
+					</div>
+					<p className="score-instruction">
+						{order
+							? "Seu pedido está salvo nesta sessão."
+							: "Ajuste os gols de cada time."}
+					</p>
+					<div className="prediction-review">
+						<p aria-live="polite">
+							{order ? (
+								"Acompanhe seu pedido"
+							) : valid ? (
+								<>
+									Seu palpite:{" "}
+									<strong>
+										{match.homeTeam} {first.home} × {first.away}{" "}
+										{match.awayTeam}
+									</strong>
+								</>
+							) : (
+								"Preencha os gols dos dois times, de 0 a 20."
+							)}
+						</p>
+						<div className="prediction-total">
+							<span>
+								{totalTickets} {totalTickets === 1 ? "bilhete" : "bilhetes"}
+								{lines.length > 1 ? ` · ${lines.length} placares` : ""}
+							</span>
+							<strong>
+								{formatCurrency(
+									order?.payment.amount ?? totalTickets * match.ticketPrice,
+								)}
+							</strong>
+						</div>
+						<button
+							type="submit"
+							className="client-button-primary"
+							disabled={!order && (!isOpen || !valid)}
+						>
+							{order
+								? "Ver meu pedido"
+								: isOpen
+									? "Revisar palpite"
+									: "Palpites encerrados"}
+							<ArrowRight size={18} aria-hidden="true" />
+						</button>
+					</div>
+				</form>
+				<div className="deadline-note">
+					<Clock3 size={15} aria-hidden="true" />
+					<span>
+						Palpites até {formatMatchDate(match.bettingDeadlineAt)}
+						<small>
+							Horário de Brasília · Válido após a confirmação do pagamento.
+						</small>
+					</span>
+				</div>
+				{match.paymentAvailable === false && !order && (
+					<p className="payment-unavailable">
+						Pagamentos indisponíveis no momento. Você pode preparar seu placar.
+					</p>
+				)}
+			</section>
+			<ActivePool match={match} distribution={distribution} />
+		</div>
+	);
+}
+export default function MatchPrediction() {
+	const { data, loading, error, reload } =
+		useResource<MatchItem[]>("/matches/active");
+	if (loading) return <LoadingMatch />;
+	if (error)
+		return (
+			<div className="client-panel error-panel" role="alert">
+				<p>Não foi possível carregar as partidas.</p>
+				<button className="client-button-secondary" onClick={reload}>
+					Tentar novamente
+				</button>
+			</div>
+		);
+	return <MatchWorkspace matches={data ?? []} />;
 }

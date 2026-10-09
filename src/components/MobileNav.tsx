@@ -1,58 +1,75 @@
 "use client";
-
-import { usePathname } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
-import MaterialIcon from "@/components/icons/MaterialIcon";
-
-const navItems = [
-	{ href: "/", icon: "hub", label: "Início" },
-	{ href: "/matches", icon: "sports_soccer", label: "Jogos" },
-	{ href: "/leaderboard", icon: "leaderboard", label: "Ranking" },
-	{ href: "/my-bets", icon: "wallet", label: "Meus Palpites" },
+import { usePathname, useRouter } from "next/navigation";
+import { Goal, House, Plus, Ticket, Trophy } from "lucide-react";
+import { useBetting } from "@/components/BettingContext";
+import { apiFetch } from "@/lib/api";
+import type { HomeResponse } from "@/lib/types";
+const items = [
+	{ href: "/", label: "Início", Icon: House },
+	{ href: "/matches", label: "Jogos", Icon: Goal },
+	{ href: "/leaderboard", label: "Ranking", Icon: Trophy },
+	{ href: "/my-bets", label: "Meus palpites", Icon: Ticket },
 ];
-
 export default function MobileNav() {
 	const pathname = usePathname();
-
-	return (
-		<nav aria-label="Navegação principal" className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-surface-dark/95 border-t border-white/10 backdrop-blur-md px-3 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex justify-between items-center">
-			{navItems.slice(0, 2).map((item) => {
-				const isActive = item.href === "/"
-					? pathname === "/"
-					: pathname.startsWith(item.href);
-
-				return (
-					<Link
-						key={item.href}
-						href={item.href}
-						className={`flex min-w-12 min-h-11 flex-col items-center justify-center gap-0.5 ${isActive ? "text-blue-300" : "text-slate-300"}`}
-						aria-current={isActive ? "page" : undefined}
-					>
-						<MaterialIcon name={item.icon} />
-						<span className="text-[11px] font-bold">{item.label}</span>
-					</Link>
-				);
-			})}
-
-			<Link href="/matches" aria-label="Ver jogos e fazer um palpite" className="-mt-8 size-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/40 border-4 border-background-dark focus-visible:outline-2 focus-visible:outline-white">
-				<MaterialIcon name="add" className="text-white font-black text-2xl" />
+	const router = useRouter();
+	const { activeMatch, setActiveMatch, openCheckout } = useBetting();
+	const [loading, setLoading] = useState(false);
+	const reviewPalpite = async () => {
+		if (loading) return;
+		if (activeMatch) {
+			openCheckout(activeMatch);
+			return;
+		}
+		setLoading(true);
+		try {
+			const home = await apiFetch<HomeResponse>("/home");
+			const now = Date.now();
+			const match = (home.matches ?? []).find(
+				(item) =>
+					item.status === "open" &&
+					new Date(item.scheduledAt).getTime() > now &&
+					new Date(item.bettingDeadlineAt).getTime() > now,
+			) ?? home.nextMatch;
+			if (match) {
+				setActiveMatch(match);
+				openCheckout(match);
+			} else router.push("/matches#palpite");
+		} catch {
+			router.push("/matches#palpite");
+		} finally {
+			setLoading(false);
+		}
+	};
+	const renderItem = ({ href, label, Icon }: (typeof items)[number]) => {
+		const active = href === "/" ? pathname === "/" : pathname?.startsWith(href);
+		return (
+			<Link
+				key={href}
+				href={href}
+				aria-current={active ? "page" : undefined}
+			>
+				<Icon size={23} aria-hidden="true" />
+				<span>{label}</span>
 			</Link>
-
-			{navItems.slice(2).map((item) => {
-				const isActive = pathname.startsWith(item.href);
-
-				return (
-					<Link
-						key={item.href}
-						href={item.href}
-						className={`flex min-w-12 min-h-11 flex-col items-center justify-center gap-0.5 ${isActive ? "text-blue-300" : "text-slate-300"}`}
-						aria-current={isActive ? "page" : undefined}
-					>
-						<MaterialIcon name={item.icon} />
-						<span className="text-[11px] font-bold">{item.label}</span>
-					</Link>
-				);
-			})}
+		);
+	};
+	return (
+		<nav className="client-mobile-nav" aria-label="Navegação principal">
+			{items.slice(0, 2).map(renderItem)}
+			<button
+				type="button"
+				className="mobile-nav-action"
+				aria-label={loading ? "Carregando palpite" : "Revisar palpite"}
+				aria-busy={loading}
+				disabled={loading}
+				onClick={() => void reviewPalpite()}
+			>
+				<Plus size={28} strokeWidth={2.5} aria-hidden="true" />
+			</button>
+			{items.slice(2).map(renderItem)}
 		</nav>
 	);
 }

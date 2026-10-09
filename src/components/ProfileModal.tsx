@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import MaterialIcon from "@/components/icons/MaterialIcon";
+import { CircleCheck, X } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
 import { useModalAccessibility } from "@/hooks/use-modal-accessibility";
 
@@ -92,7 +92,7 @@ export default function ProfileModal({
 
 	return (
 		<div
-			className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
+			className="client-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
 			onClick={onClose}
 		>
 			<div
@@ -118,7 +118,7 @@ export default function ProfileModal({
 						className="size-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
 						aria-label="Fechar"
 					>
-						<MaterialIcon name="close" className="text-sm" />
+						<X size={16} aria-hidden="true" />
 					</button>
 				</div>
 
@@ -206,7 +206,7 @@ export default function ProfileModal({
 					)}
 					{success && (
 						<p className="text-emerald-400 text-xs font-bold flex items-center gap-1">
-							<MaterialIcon name="check_circle" className="text-sm" />
+							<CircleCheck size={14} aria-hidden="true" />
 							Perfil atualizado com sucesso.
 						</p>
 					)}

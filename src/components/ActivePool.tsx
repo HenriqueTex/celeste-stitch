@@ -1,64 +1,76 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import MaterialIcon from "@/components/icons/MaterialIcon";
-import { apiFetch } from "@/lib/api";
+import { Info, Ticket, Users } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
-import type { HomeResponse } from "@/lib/types";
-
-export default function ActivePool() {
-	const [data, setData] = useState<HomeResponse | null>(null);
-	const participants = data?.participantsCount ?? 0;
-
-	useEffect(() => {
-		void apiFetch<HomeResponse>("/home").then(setData).catch(() => setData(null));
-	}, []);
-
+import type { HomeResponse, MatchItem } from "@/lib/types";
+export default function ActivePool({
+	match,
+	distribution,
+}: {
+	match: MatchItem;
+	distribution?: HomeResponse["poolDistribution"];
+}) {
+	const stats = match.stats;
+	const consensus = stats.consensus;
 	return (
-		<section className="glass-panel rounded-2xl p-6 bg-gradient-to-br from-surface-dark to-primary/20">
-			<h3 className="font-black uppercase italic tracking-tight mb-4 flex items-center gap-2">
-				<MaterialIcon name="payments" className="text-primary" />
-				Bolão Celeste
-			</h3>
-
-			<div className="text-center py-4 bg-black/20 rounded-2xl border border-white/5 mb-6">
-				<p className="text-xs font-bold text-slate-300 uppercase">
-					{data?.nextMatch ? "Pote da Partida" : "Aguardando nova partida"}
-				</p>
-				<p className="text-3xl font-black text-white italic">
-					{data?.nextMatch ? formatCurrency(data.activePoolAmount) : "—"}
-				</p>
-				<p className="text-xs text-slate-300 mt-1">
-					{participants} {participants === 1 ? "torcedor cadastrado" : "torcedores cadastrados"}
-				</p>
-			</div>
-
-			{data?.poolDistribution && (
-				<div className="space-y-4">
-					<div className="flex items-start gap-3">
-						<div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
-							<MaterialIcon name="celebration" className="text-primary text-lg" />
-						</div>
-						<div>
-							<p className="text-xs font-bold">{data.poolDistribution.winners}% Vencedores</p>
-							<p className="text-xs text-slate-300">
-								Rateio proporcional entre os acertadores exatos.
-							</p>
-						</div>
-					</div>
-					<div className="flex items-start gap-3">
-						<div className="size-8 rounded-lg bg-accent/20 flex items-center justify-center shrink-0">
-							<MaterialIcon name="volunteer_activism" className="text-accent text-lg" />
-						</div>
-						<div>
-							<p className="text-xs font-bold">{data.poolDistribution.base}% Base Jovem</p>
-							<p className="text-xs text-slate-300">
-								Percentual destinado à Base Jovem.
-							</p>
-						</div>
-					</div>
+		<aside className="pool-summary" aria-labelledby="pool-heading">
+			<p className="eyebrow">O bolão desta partida</p>
+			<h2 id="pool-heading" className="pool-value">
+				{formatCurrency(stats.revenue)}
+			</h2>
+			<p className="muted">arrecadados em pagamentos confirmados</p>
+			<dl className="pool-numbers">
+				<div>
+					<dt>
+						<Users size={18} aria-hidden="true" />
+						Participantes
+					</dt>
+					<dd>{stats.participants}</dd>
 				</div>
+				<div>
+					<dt>
+						<Ticket size={18} aria-hidden="true" />
+						Bilhetes confirmados
+					</dt>
+					<dd>{stats.tickets}</dd>
+				</div>
+			</dl>
+			<details className="pool-help">
+				<summary>
+					<Info size={16} aria-hidden="true" />
+					Como funciona o bolão
+				</summary>
+				<div>
+					<p>
+						Cada bilhete registra um placar. A participação é válida após a
+						confirmação do pagamento.
+					</p>
+					{distribution && (
+						<p>
+							{distribution.winners}% da arrecadação são destinados aos
+							acertadores do placar exato, em proporção aos bilhetes vencedores.
+							Os {distribution.base}% restantes seguem a distribuição do bolão.
+						</p>
+					)}
+					<p>
+						O total arrecadado não é um prêmio individual. Participantes incluem
+						contas e pedidos de visitantes distintos.
+					</p>
+				</div>
+			</details>
+			{consensus && stats.tickets > 0 ? (
+				<div className="consensus-note">
+					<span>Um dos placares em destaque</span>
+					<strong>
+						{consensus.homeScore} × {consensus.awayScore}
+					</strong>
+					<p>
+						{consensus.tickets} de {stats.tickets} bilhetes confirmados (
+						{Math.round((consensus.tickets / stats.tickets) * 100)}%). São
+						escolhas da comunidade.
+					</p>
+				</div>
+			) : (
+				<p className="empty-inline">Ainda sem palpites confirmados.</p>
 			)}
-		</section>
+		</aside>
 	);
 }

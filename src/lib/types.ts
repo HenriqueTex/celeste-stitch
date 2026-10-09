@@ -27,6 +27,7 @@ export interface MatchStats {
 }
 
 export interface MatchItem {
+	paymentAvailable?: boolean;
 	id: number;
 	homeTeam: string;
 	awayTeam: string;
@@ -84,6 +85,7 @@ export interface PrizeItem {
 }
 
 export interface BetItem {
+	userId?: number | null;
 	id: number;
 	matchId: number;
 	paymentId: number | null;
@@ -137,6 +139,7 @@ export interface ActivityFeedItem {
 }
 
 export interface HomeResponse {
+	matches?: MatchItem[];
 	nextMatch: MatchItem | null;
 	activePoolAmount: number;
 	participantsCount: number;

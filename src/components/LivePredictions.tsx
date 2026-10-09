@@ -1,83 +1,63 @@
 "use client";
-
-import { useEffect, useState } from "react";
-import MaterialIcon from "@/components/icons/MaterialIcon";
-import { apiFetch } from "@/lib/api";
+import { useState } from "react";
+import { Ticket, Trophy, ChevronDown } from "lucide-react";
 import { formatCurrency, formatRelativeTime } from "@/lib/format";
 import type { ActivityFeedItem } from "@/lib/types";
-
-export default function LivePredictions() {
-	const [items, setItems] = useState<ActivityFeedItem[]>([]);
-
-	useEffect(() => {
-		void apiFetch<ActivityFeedItem[]>("/activity-feed")
-			.then(setItems)
-			.catch(() => setItems([]));
-	}, []);
-
+export default function LivePredictions({
+	items,
+}: {
+	items: ActivityFeedItem[];
+}) {
+	const [visible, setVisible] = useState(4);
 	return (
-		<section>
-			<div className="flex items-center justify-between mb-4">
-				<div className="flex items-center gap-2">
-					<MaterialIcon name="rss_feed" className="text-primary font-bold" />
-					<h2 className="text-xl font-black uppercase italic tracking-tight">
-						Palpites ao Vivo
-					</h2>
-				</div>
-				<span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20">
-					{items.length} eventos
-				</span>
+		<section className="activity-section" aria-labelledby="activity-heading">
+			<div className="section-heading">
+				<h2 id="activity-heading">Atividade recente</h2>
+				<span className="muted small-text">Da nossa comunidade</span>
 			</div>
-
-			<div className="flex flex-col gap-3">
-				{items.length === 0 && (
-					<div className="glass-panel p-4 rounded-xl text-sm text-slate-400">
-						O feed de atividade vai aparecer aqui assim que surgirem apostas e prêmios.
-					</div>
-				)}
-
-				{items.map((item) => {
-					const amount =
-						typeof item.metadata?.amount === "number"
-							? formatCurrency(item.metadata.amount)
-							: null;
+			<ul className="activity-list">
+				{items.slice(0, visible).map((item) => {
+					const prize = item.type === "prize_awarded";
+					const title = prize
+						? item.title.replace("ganhou prêmio", "teve um prêmio apurado")
+						: item.title;
 					return (
-						<div
-							key={item.id}
-							className="glass-panel p-4 rounded-xl flex items-center justify-between border-l-4 border-l-primary"
-						>
-							<div className="flex items-center gap-4">
-								<div className="size-12 rounded-full bg-primary/10 flex items-center justify-center border border-white/10">
-									<MaterialIcon
-										name={
-											item.type === "prize_awarded"
-												? "emoji_events"
-												: "sports_soccer"
-										}
-										className="text-primary text-xl"
-									/>
-								</div>
-								<div>
-									<div className="flex items-center gap-2">
-										<span className="font-bold text-sm">{item.title}</span>
-										<span className="text-slate-300 text-xs">
-											{formatRelativeTime(item.createdAt)}
-										</span>
-									</div>
-									<p className="text-xs text-slate-400 mt-0.5">
-										{item.description}
-										{amount && (
-											<span className="text-accent font-bold ml-1">
-												{amount}
-											</span>
-										)}
-									</p>
-								</div>
+						<li key={item.id}>
+							<span className="activity-icon">
+								{prize ? (
+									<Trophy size={18} aria-hidden="true" />
+								) : (
+									<Ticket size={18} aria-hidden="true" />
+								)}
+							</span>
+							<div className="activity-copy">
+								<p>{title}</p>
+								<span>
+									{item.description}
+									{typeof item.metadata?.amount === "number" && (
+										<> · {formatCurrency(item.metadata.amount)}</>
+									)}
+								</span>
 							</div>
-						</div>
+							<time dateTime={item.createdAt}>
+								{formatRelativeTime(item.createdAt)}
+							</time>
+						</li>
 					);
 				})}
-			</div>
+			</ul>
+			{!items.length && (
+				<p className="empty-inline">As novas participações aparecerão aqui.</p>
+			)}
+			{items.length > visible && (
+				<button
+					className="activity-more text-link"
+					onClick={() => setVisible((count) => count + 4)}
+				>
+					Mostrar mais
+					<ChevronDown size={16} aria-hidden="true" />
+				</button>
+			)}
 		</section>
 	);
 }

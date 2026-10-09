@@ -17,7 +17,7 @@ type RequestOptions = RequestInit & {
 
 export async function apiFetch<T>(
 	path: string,
-	options: RequestOptions = {}
+	options: RequestOptions = {},
 ): Promise<T> {
 	const headers = new Headers(options.headers ?? {});
 	headers.set("Accept", "application/json");
@@ -41,10 +41,11 @@ export async function apiFetch<T>(
 			cache: "no-store",
 		});
 	} catch (err) {
+		if (options.signal?.aborted) throw err;
 		console.error(`[api] ${method} ${url} — falha de rede`, err);
 		throw new ApiError(
-			"Não foi possível conectar à API. Verifique se o servidor está no ar.",
-			0
+			"Não foi possível conectar. Confira sua conexão e tente novamente.",
+			0,
 		);
 	}
 
@@ -53,11 +54,11 @@ export async function apiFetch<T>(
 	if (!response.ok) {
 		console.error(
 			`[api] ${method} ${url} → ${response.status}`,
-			data ?? "(sem corpo de resposta)"
+			data ?? "(sem corpo de resposta)",
 		);
 		throw new ApiError(
 			data?.message ?? "Não foi possível concluir a requisição.",
-			response.status
+			response.status,
 		);
 	}
 
