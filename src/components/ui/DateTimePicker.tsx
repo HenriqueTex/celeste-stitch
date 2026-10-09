@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
@@ -47,12 +47,14 @@ export default function DateTimePicker({
 	const [draftDate, setDraftDate] = useState<Date | undefined>(initial.date);
 	const [draftTime, setDraftTime] = useState<string>(initial.time);
 
-	useEffect(() => {
-		if (!open) return;
-		const parsed = parseValue(value);
-		setDraftDate(parsed.date);
-		setDraftTime(parsed.time);
-	}, [open, value]);
+	const handleOpenChange = (next: boolean) => {
+		if (next) {
+			const parsed = parseValue(value);
+			setDraftDate(parsed.date);
+			setDraftTime(parsed.time);
+		}
+		setOpen(next);
+	};
 
 	const confirm = () => {
 		if (!draftDate) return;
@@ -68,7 +70,7 @@ export default function DateTimePicker({
 		: placeholder;
 
 	return (
-		<Popover open={open} onOpenChange={setOpen}>
+		<Popover open={open} onOpenChange={handleOpenChange}>
 			<PopoverTrigger asChild>
 				<Button
 					type="button"

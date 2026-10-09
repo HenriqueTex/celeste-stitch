@@ -140,6 +140,7 @@ export interface HomeResponse {
 	nextMatch: MatchItem | null;
 	activePoolAmount: number;
 	participantsCount: number;
+	poolDistribution?: { winners: number; base: number };
 	topPredictors: LeaderboardRow[];
 	activityFeed: ActivityFeedItem[];
 }

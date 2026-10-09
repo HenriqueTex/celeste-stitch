@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import MaterialIcon from "@/components/icons/MaterialIcon";
+import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/components/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { formatCurrency, formatShortDate } from "@/lib/format";
@@ -29,6 +30,7 @@ export default function MyBetsPanel() {
 	const { isLoggedIn, token } = useAuth();
 	const [bets, setBets] = useState<BetItem[]>([]);
 	const [error, setError] = useState("");
+	const [authModalOpen, setAuthModalOpen] = useState(false);
 
 	useEffect(() => {
 		if (!token) return;
@@ -54,9 +56,19 @@ export default function MyBetsPanel() {
 
 	if (!isLoggedIn) {
 		return (
-			<div className="glass-panel rounded-2xl p-6 text-sm text-slate-400">
-				Faça login para acompanhar seus palpites, pagamentos e premiações.
-			</div>
+			<>
+				<section className="glass-panel mx-auto max-w-2xl rounded-2xl p-8 text-center">
+					<MaterialIcon name="wallet" className="text-4xl text-accent" />
+					<h1 className="mt-3 text-2xl font-black uppercase italic">Meus Palpites</h1>
+					<p className="mt-2 text-sm text-slate-300">
+						Entre para acompanhar seus palpites, pagamentos e premiações.
+					</p>
+					<button onClick={() => setAuthModalOpen(true)} className="mt-5 rounded-xl bg-primary px-6 py-3 font-bold text-white hover:bg-blue-600 focus-visible:outline-2 focus-visible:outline-white transition-colors">
+						Entrar na minha conta
+					</button>
+				</section>
+				<AuthModal open={authModalOpen} initialView="login" onClose={() => setAuthModalOpen(false)} />
+			</>
 		);
 	}
 
@@ -64,9 +76,9 @@ export default function MyBetsPanel() {
 		<div className="max-w-4xl mx-auto flex flex-col gap-6">
 			<div className="flex items-center gap-2">
 				<MaterialIcon name="wallet" className="text-accent font-black" />
-				<h2 className="font-black uppercase italic tracking-tight text-lg">
+				<h1 className="font-black uppercase italic tracking-tight text-lg">
 					Meus Palpites
-				</h2>
+				</h1>
 			</div>
 
 			<div className="grid grid-cols-3 gap-3 sm:gap-4">
@@ -74,7 +86,7 @@ export default function MyBetsPanel() {
 					<p className="text-xl sm:text-2xl font-black italic text-primary">
 						{stats.totalPoints}
 					</p>
-					<p className="text-[10px] font-bold uppercase text-slate-500 tracking-wide">
+					<p className="text-xs font-bold uppercase text-slate-300 tracking-wide">
 						Total de Pontos
 					</p>
 				</div>
@@ -82,7 +94,7 @@ export default function MyBetsPanel() {
 					<p className="text-xl sm:text-2xl font-black italic text-success">
 						{stats.exactCount}
 					</p>
-					<p className="text-[10px] font-bold uppercase text-slate-500 tracking-wide">
+					<p className="text-xs font-bold uppercase text-slate-300 tracking-wide">
 						Placares Exatos
 					</p>
 				</div>
@@ -90,7 +102,7 @@ export default function MyBetsPanel() {
 					<p className="text-xl sm:text-2xl font-black italic text-accent">
 						{stats.accuracy}%
 					</p>
-					<p className="text-[10px] font-bold uppercase text-slate-500 tracking-wide">
+					<p className="text-xs font-bold uppercase text-slate-300 tracking-wide">
 						Acurácia
 					</p>
 				</div>
@@ -99,7 +111,7 @@ export default function MyBetsPanel() {
 			{error && <div className="text-sm text-red-400">{error}</div>}
 
 			<div className="glass-panel rounded-2xl overflow-hidden">
-				<div className="grid grid-cols-[1fr_70px_90px_90px_80px] sm:grid-cols-[1fr_90px_120px_110px_90px] items-center px-4 sm:px-6 py-3 border-b border-white/5 text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+				<div className="hidden sm:grid grid-cols-[1fr_90px_120px_110px_90px] items-center px-6 py-3 border-b border-white/5 text-xs font-bold uppercase text-slate-300 tracking-wider">
 					<span>Jogo</span>
 					<span className="text-center">Palpite</span>
 					<span className="text-center">Pagamento</span>
@@ -118,48 +130,54 @@ export default function MyBetsPanel() {
 					return (
 						<div
 							key={bet.id}
-							className="group grid grid-cols-[1fr_70px_90px_90px_80px] sm:grid-cols-[1fr_90px_120px_110px_90px] items-center px-4 sm:px-6 py-4 border-b border-white/[0.03] hover:bg-white/5 transition-colors"
+						className="group flex flex-col gap-3 sm:grid sm:grid-cols-[1fr_90px_120px_110px_90px] sm:items-center px-4 sm:px-6 py-4 border-b border-white/[0.03] hover:bg-white/5 transition-colors"
 						>
-							<div>
+						<div className="min-w-0">
 								<p className="font-bold text-sm">
 									{bet.match.homeTeam} vs {bet.match.awayTeam}
 								</p>
-								<p className="text-[10px] text-slate-500">
+								<p className="text-xs text-slate-300">
 									{formatShortDate(bet.match.scheduledAt)} · {bet.tickets} bilhete(s)
 								</p>
 							</div>
 
-							<p className="text-center text-sm font-black italic">
+						<div className="grid grid-cols-2 gap-3 sm:contents">
+							<div className="text-sm font-black italic sm:text-center">
+								<span className="block sm:hidden text-xs not-italic font-medium text-slate-300">Palpite</span>
 								{bet.homeScorePrediction} - {bet.awayScorePrediction}
-							</p>
+							</div>
 
-							<div className="text-center">
-								<p className="text-xs font-bold uppercase text-primary">
+							<div className="sm:text-center">
+								<span className="block sm:hidden text-xs text-slate-300">Pagamento</span>
+								<p className="text-xs font-bold uppercase text-blue-300">
 									{bet.payment?.status === "confirmed" ? "Confirmado" : "Pendente"}
 								</p>
-								<p className="text-[10px] text-slate-500">
+								<p className="text-xs text-slate-300">
 									{formatCurrency(bet.totalAmount)}
 								</p>
 							</div>
 
-							<div className="flex justify-center">
+							<div className="flex flex-col items-start sm:items-center sm:justify-center">
+								<span className="block sm:hidden text-xs text-slate-300">Resultado</span>
 								{style ? (
 									<span
-										className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border ${style.cls}`}
+										className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold border ${style.cls}`}
 									>
 										<MaterialIcon name={style.icon} className="text-xs" />
 										{style.label}
 									</span>
 								) : (
-									<span className="text-[10px] font-bold text-slate-500 uppercase">
+									<span className="text-xs font-bold text-slate-300 uppercase">
 										Em aberto
 									</span>
 								)}
 							</div>
 
-							<p className="text-right text-xs font-black italic">
+							<div className="text-xs font-black italic sm:text-right">
+								<span className="block sm:hidden text-xs not-italic font-medium text-slate-300">Pontos</span>
 								{bet.points > 0 ? `+${bet.points}` : bet.points}
-							</p>
+							</div>
+						</div>
 						</div>
 					);
 				})}

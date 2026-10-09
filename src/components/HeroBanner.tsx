@@ -11,17 +11,17 @@ export default function HeroBanner() {
 
 			<div className="relative z-10">
 				<div className="flex items-center gap-2 mb-3">
-					<span className="bg-success text-white text-[10px] font-black px-2 py-0.5 rounded-full pulse-live flex items-center gap-1 uppercase tracking-tighter">
+					<span className="bg-emerald-700 text-white text-xs font-black px-2 py-1 rounded-full flex items-center gap-1 uppercase tracking-tighter">
 						<span className="size-1.5 bg-white rounded-full" />
-						1.248 Online Agora
+						Comunidade Celeste
 					</span>
 				</div>
 				<h1 className="text-white text-3xl sm:text-4xl font-black leading-tight tracking-tight uppercase italic mb-2">
-					O Bolão Está Pegando Fogo!
+					Cada Jogo, Um Novo Palpite
 				</h1>
 				<p className="text-slate-200 max-w-lg font-medium text-sm">
-					Junte-se a mais de 50.000 torcedores palpitando no jogão de hoje.
-					A sequência vai continuar?
+					Acompanhe as partidas do Cruzeiro, faça seus palpites e veja os
+					resultados da comunidade.
 				</p>
 			</div>
 		</section>

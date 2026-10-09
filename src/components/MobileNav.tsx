@@ -15,7 +15,7 @@ export default function MobileNav() {
 	const pathname = usePathname();
 
 	return (
-		<div className="lg:hidden sticky bottom-0 z-50 bg-surface-dark/95 border-t border-white/10 backdrop-blur-md px-6 py-3 flex justify-between items-center">
+		<nav aria-label="Navegação principal" className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-surface-dark/95 border-t border-white/10 backdrop-blur-md px-3 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex justify-between items-center">
 			{navItems.slice(0, 2).map((item) => {
 				const isActive = item.href === "/"
 					? pathname === "/"
@@ -25,18 +25,18 @@ export default function MobileNav() {
 					<Link
 						key={item.href}
 						href={item.href}
-						className={`flex flex-col items-center gap-1 ${isActive ? "text-primary" : "text-slate-500"}`}
+						className={`flex min-w-12 min-h-11 flex-col items-center justify-center gap-0.5 ${isActive ? "text-blue-300" : "text-slate-300"}`}
+						aria-current={isActive ? "page" : undefined}
 					>
-						<MaterialIcon name={item.icon} className={isActive ? "" : "text-slate-500"} />
-						<span className="text-[10px] font-bold">{item.label}</span>
+						<MaterialIcon name={item.icon} />
+						<span className="text-[11px] font-bold">{item.label}</span>
 					</Link>
 				);
 			})}
 
-			{/* Floating center button */}
-			<div className="-mt-8 size-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/40 border-4 border-background-dark">
+			<Link href="/matches" aria-label="Ver jogos e fazer um palpite" className="-mt-8 size-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/40 border-4 border-background-dark focus-visible:outline-2 focus-visible:outline-white">
 				<MaterialIcon name="add" className="text-white font-black text-2xl" />
-			</div>
+			</Link>
 
 			{navItems.slice(2).map((item) => {
 				const isActive = pathname.startsWith(item.href);
@@ -45,13 +45,14 @@ export default function MobileNav() {
 					<Link
 						key={item.href}
 						href={item.href}
-						className={`flex flex-col items-center gap-1 ${isActive ? "text-primary" : "text-slate-500"}`}
+						className={`flex min-w-12 min-h-11 flex-col items-center justify-center gap-0.5 ${isActive ? "text-blue-300" : "text-slate-300"}`}
+						aria-current={isActive ? "page" : undefined}
 					>
-						<MaterialIcon name={item.icon} className={isActive ? "" : "text-slate-500"} />
-						<span className="text-[10px] font-bold">{item.label}</span>
+						<MaterialIcon name={item.icon} />
+						<span className="text-[11px] font-bold">{item.label}</span>
 					</Link>
 				);
 			})}
-		</div>
+		</nav>
 	);
 }

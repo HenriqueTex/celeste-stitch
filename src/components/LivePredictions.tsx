@@ -60,7 +60,7 @@ export default function LivePredictions() {
 								<div>
 									<div className="flex items-center gap-2">
 										<span className="font-bold text-sm">{item.title}</span>
-										<span className="text-slate-500 text-[10px]">
+										<span className="text-slate-300 text-xs">
 											{formatRelativeTime(item.createdAt)}
 										</span>
 									</div>

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import MaterialIcon from "@/components/icons/MaterialIcon";
 import { useAuth } from "@/components/AuthContext";
+import { useModalAccessibility } from "@/hooks/use-modal-accessibility";
 
 function fmtCPF(v: string) {
 	return v
@@ -54,6 +55,9 @@ export default function ProfileModal({
 		}
 	}, [open, user]);
 
+	const titleId = useId();
+	const dialogRef = useModalAccessibility(open, onClose);
+
 	if (!open) return null;
 
 	const handleSave = async (e: React.FormEvent) => {
@@ -92,15 +96,20 @@ export default function ProfileModal({
 			onClick={onClose}
 		>
 			<div
+				ref={dialogRef}
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby={titleId}
+				tabIndex={-1}
 				className="glass-panel w-full max-w-md rounded-2xl overflow-hidden animate-[modal-in_0.2s_ease-out] max-h-[92dvh] flex flex-col"
 				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/8 shrink-0">
 					<div>
-						<h3 className="font-black text-base uppercase italic tracking-tight">
+						<h3 id={titleId} className="font-black text-base uppercase italic tracking-tight">
 							Editar Perfil
 						</h3>
-						<p className="text-[10px] text-slate-500 font-bold mt-0.5">
+						<p className="text-xs text-slate-300 font-bold mt-0.5">
 							{user?.email}
 						</p>
 					</div>
@@ -118,7 +127,7 @@ export default function ProfileModal({
 					className="overflow-y-auto px-5 py-5 flex-1 flex flex-col gap-4"
 				>
 					<div>
-						<label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1 block">
+						<label className="text-xs font-black uppercase tracking-wider text-slate-300 mb-1 block">
 							Nome completo
 						</label>
 						<input
@@ -133,7 +142,7 @@ export default function ProfileModal({
 					</div>
 
 					<div>
-						<label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1 block">
+						<label className="text-xs font-black uppercase tracking-wider text-slate-300 mb-1 block">
 							Apelido
 						</label>
 						<input
@@ -148,7 +157,7 @@ export default function ProfileModal({
 					</div>
 
 					<div>
-						<label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1 block">
+						<label className="text-xs font-black uppercase tracking-wider text-slate-300 mb-1 block">
 							CPF
 						</label>
 						<input
@@ -163,7 +172,7 @@ export default function ProfileModal({
 					</div>
 
 					<div>
-						<label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1 block">
+						<label className="text-xs font-black uppercase tracking-wider text-slate-300 mb-1 block">
 							WhatsApp / Telefone
 						</label>
 						<input
@@ -178,7 +187,7 @@ export default function ProfileModal({
 					</div>
 
 					<div>
-						<label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1 block">
+						<label className="text-xs font-black uppercase tracking-wider text-slate-300 mb-1 block">
 							Chave PIX (para receber prêmios)
 						</label>
 						<input

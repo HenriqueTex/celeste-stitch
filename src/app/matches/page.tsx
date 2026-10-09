@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 export default function MatchesPage() {
 	return (
 		<div className="max-w-4xl mx-auto flex flex-col gap-6">
+			<h1 className="text-xl font-black uppercase italic">Jogos do Cruzeiro</h1>
 			<MatchPrediction />
 			<MatchHistory />
 		</div>

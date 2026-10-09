@@ -19,7 +19,7 @@ export default function LayoutShell({
 	return (
 		<>
 			<Header />
-			<main className="flex-1 flex justify-center py-6 px-4 sm:px-8">
+			<main className="flex-1 flex justify-center pt-6 pb-28 px-4 sm:px-8 lg:pb-6">
 				<div className="w-full max-w-[1200px]">{children}</div>
 			</main>
 			<MobileNav />

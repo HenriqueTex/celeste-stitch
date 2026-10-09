@@ -71,17 +71,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const isLoading = !hydrated;
 
 	useEffect(() => {
-		const storedToken = localStorage.getItem(TOKEN_KEY);
-		const storedUser = localStorage.getItem(USER_KEY);
-		if (storedToken && storedUser) {
-			try {
-				setUser(JSON.parse(storedUser) as AuthUser);
-				setToken(storedToken);
-			} catch {
-				persistSession(null, null);
+		const timer = setTimeout(() => {
+			const storedToken = localStorage.getItem(TOKEN_KEY);
+			const storedUser = localStorage.getItem(USER_KEY);
+			if (storedToken && storedUser) {
+				try {
+					setUser(JSON.parse(storedUser) as AuthUser);
+					setToken(storedToken);
+				} catch {
+					persistSession(null, null);
+				}
 			}
-		}
-		setHydrated(true);
+			setHydrated(true);
+		}, 0);
+		return () => clearTimeout(timer);
 	}, []);
 
 	useEffect(() => {

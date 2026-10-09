@@ -23,12 +23,12 @@ export default function TopPredictors() {
 						Melhores Palpiteiros
 					</h3>
 				</div>
-				<span className="text-[10px] font-bold text-slate-500">Geral</span>
+				<span className="text-xs font-bold text-slate-300">Geral</span>
 			</div>
 
 			<div className="space-y-4">
 				{predictors.length === 0 && (
-					<div className="text-xs text-slate-500">
+					<div className="text-xs text-slate-300">
 						O ranking aparecerá assim que as partidas forem liquidadas.
 					</div>
 				)}
@@ -45,7 +45,7 @@ export default function TopPredictors() {
 						<div className="flex items-center gap-3">
 							<span
 								className={`font-black italic text-lg w-4 ${
-									index === 0 ? "text-accent" : "text-slate-500"
+									index === 0 ? "text-accent" : "text-slate-300"
 								}`}
 							>
 								{player.rank}
@@ -64,7 +64,7 @@ export default function TopPredictors() {
 							</div>
 							<div>
 								<p className="font-bold text-sm">{player.name}</p>
-								<p className="text-[10px] font-bold uppercase text-slate-500">
+								<p className="text-xs font-bold uppercase text-slate-300">
 									{player.accuracy}% acertos
 								</p>
 							</div>

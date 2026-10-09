@@ -76,7 +76,7 @@ export default function MatchHistory() {
 									)}
 								</div>
 								<div>
-									<p className="text-white/50 text-[9px] font-bold uppercase tracking-widest mb-0.5">
+									<p className="text-slate-300 text-[11px] font-bold uppercase tracking-wide mb-0.5">
 										{match.competition}
 									</p>
 									<p className="text-white/90 text-[11px] font-semibold uppercase tracking-wide leading-tight mb-1">
@@ -87,7 +87,7 @@ export default function MatchHistory() {
 											? `${match.result.homeScore} - ${match.result.awayScore}`
 											: "—"}
 									</p>
-									<p className="text-white/40 text-[9px] font-medium mt-1">
+									<p className="text-slate-300 text-xs font-medium mt-1">
 										{formatShortDate(match.scheduledAt)}
 									</p>
 								</div>

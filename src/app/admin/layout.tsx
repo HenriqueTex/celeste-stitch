@@ -50,7 +50,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 						</span>
 					</header>
 				)}
-				<main className="flex-1 p-4">{children}</main>
+				<main className={isLoginPage ? "flex-1" : "flex-1 p-4"}>{children}</main>
 			</SidebarInset>
 		</SidebarProvider>
 	);

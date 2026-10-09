@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import MaterialIcon from "@/components/icons/MaterialIcon";
 import { useAuth } from "@/components/AuthContext";
+import { useModalAccessibility } from "@/hooks/use-modal-accessibility";
 
 type ModalView = "options" | "login" | "register";
 
@@ -48,8 +49,6 @@ export default function AuthModal({
 		}
 	}, [open, initialView]);
 
-	if (!open) return null;
-
 	const resetAndClose = () => {
 		setView("options");
 		setName("");
@@ -63,6 +62,10 @@ export default function AuthModal({
 		setLoading(false);
 		onClose();
 	};
+	const titleId = useId();
+	const dialogRef = useModalAccessibility(open, resetAndClose);
+
+	if (!open) return null;
 
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -132,7 +135,12 @@ export default function AuthModal({
 			onClick={resetAndClose}
 		>
 			<div
-				className="glass-panel w-full max-w-sm rounded-2xl p-6 relative animate-[modal-in_0.2s_ease-out]"
+				ref={dialogRef}
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby={titleId}
+				tabIndex={-1}
+				className="glass-panel w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-2xl p-6 relative animate-[modal-in_0.2s_ease-out]"
 				onClick={(e) => e.stopPropagation()}
 			>
 				<button
@@ -148,7 +156,7 @@ export default function AuthModal({
 						<div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
 							<MaterialIcon name="hub" className="text-primary text-3xl" />
 						</div>
-						<h3 className="font-black uppercase italic text-lg mb-1">
+						<h3 id={titleId} className="font-black uppercase italic text-lg mb-1">
 							Bolão Celeste
 						</h3>
 						<p className="text-sm text-slate-400 mb-6">
@@ -181,19 +189,19 @@ export default function AuthModal({
 								setView("options");
 								setError("");
 							}}
-							className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 mb-4 transition-colors"
+							className="flex items-center gap-1 text-xs text-slate-300 hover:text-slate-300 mb-4 transition-colors"
 						>
 							<MaterialIcon name="arrow_back" className="text-sm" />
 							Voltar
 						</button>
 
-						<h3 className="font-black uppercase italic text-lg mb-1">Entrar</h3>
+						<h3 id={titleId} className="font-black uppercase italic text-lg mb-1">Entrar</h3>
 						<p className="text-sm text-slate-400 mb-5">
 							Acesse sua conta para continuar
 						</p>
 
 						<form onSubmit={handleLogin} className="flex flex-col gap-3">
-							<label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
 								E-mail
 								<input
 									type="email"
@@ -203,7 +211,7 @@ export default function AuthModal({
 									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
 								/>
 							</label>
-							<label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
 								Senha
 								<input
 									type="password"
@@ -238,13 +246,13 @@ export default function AuthModal({
 								setView("options");
 								setError("");
 							}}
-							className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 mb-4 transition-colors"
+							className="flex items-center gap-1 text-xs text-slate-300 hover:text-slate-300 mb-4 transition-colors"
 						>
 							<MaterialIcon name="arrow_back" className="text-sm" />
 							Voltar
 						</button>
 
-						<h3 className="font-black uppercase italic text-lg mb-1">
+						<h3 id={titleId} className="font-black uppercase italic text-lg mb-1">
 							Criar Conta
 						</h3>
 						<p className="text-sm text-slate-400 mb-5">
@@ -252,7 +260,7 @@ export default function AuthModal({
 						</p>
 
 						<form onSubmit={handleRegister} className="flex flex-col gap-3">
-							<label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
 								Nome
 								<input
 									type="text"
@@ -262,7 +270,7 @@ export default function AuthModal({
 									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
 								/>
 							</label>
-							<label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
 								E-mail
 								<input
 									type="email"
@@ -272,7 +280,7 @@ export default function AuthModal({
 									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
 								/>
 							</label>
-							<label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
 								Senha
 								<input
 									type="password"
@@ -282,7 +290,7 @@ export default function AuthModal({
 									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
 								/>
 							</label>
-							<label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
 								Confirmar Senha
 								<input
 									type="password"
@@ -292,7 +300,7 @@ export default function AuthModal({
 									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
 								/>
 							</label>
-							<label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
 								CPF
 								<input
 									type="text"
@@ -302,7 +310,7 @@ export default function AuthModal({
 									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
 								/>
 							</label>
-							<label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
 								WhatsApp / Telefone
 								<input
 									type="tel"
@@ -312,7 +320,7 @@ export default function AuthModal({
 									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
 								/>
 							</label>
-							<label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
 								Chave PIX (para receber prêmios)
 								<input
 									type="text"

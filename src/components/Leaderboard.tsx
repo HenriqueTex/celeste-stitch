@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import MaterialIcon from "@/components/icons/MaterialIcon";
+import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import type { LeaderboardRow } from "@/lib/types";
 
@@ -18,9 +19,9 @@ export default function Leaderboard() {
 		<div className="flex flex-col gap-6">
 			<div className="flex items-center gap-2">
 				<MaterialIcon name="leaderboard" className="text-accent text-2xl" />
-				<h2 className="font-black uppercase italic tracking-tight text-lg">
+				<h1 className="font-black uppercase italic tracking-tight text-lg">
 					Ranking Geral
-				</h2>
+				</h1>
 			</div>
 
 			<div className="grid grid-cols-3 gap-3 sm:gap-4">
@@ -28,7 +29,7 @@ export default function Leaderboard() {
 					<p className="text-xl sm:text-2xl font-black italic">
 						{rows.length}
 					</p>
-					<p className="text-[10px] font-bold uppercase text-slate-500 tracking-wide">
+					<p className="text-xs font-bold uppercase text-slate-300 tracking-wide">
 						Rankeados
 					</p>
 				</div>
@@ -36,22 +37,22 @@ export default function Leaderboard() {
 					<p className="text-xl sm:text-2xl font-black italic text-accent">
 						{rows[0]?.points?.toLocaleString("pt-BR") ?? 0}
 					</p>
-					<p className="text-[10px] font-bold uppercase text-slate-500 tracking-wide">
+					<p className="text-xs font-bold uppercase text-slate-300 tracking-wide">
 						Líder Atual
 					</p>
 				</div>
 				<div className="glass-panel rounded-xl p-4 text-center">
 					<p className="text-xl sm:text-2xl font-black italic text-success">
-						{rows[0]?.accuracy ?? 0}%
+						{rows.length ? Math.max(...rows.map((row) => row.accuracy)) : 0}%
 					</p>
-					<p className="text-[10px] font-bold uppercase text-slate-500 tracking-wide">
+					<p className="text-xs font-bold uppercase text-slate-300 tracking-wide">
 						Melhor Acurácia
 					</p>
 				</div>
 			</div>
 
 			<div className="glass-panel rounded-2xl overflow-hidden">
-				<div className="grid grid-cols-[50px_1fr_90px_90px] items-center px-4 sm:px-6 py-3 border-b border-white/5 text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+				<div className="grid grid-cols-[50px_1fr_90px_90px] items-center px-4 sm:px-6 py-3 border-b border-white/5 text-xs font-bold uppercase text-slate-300 tracking-wider">
 					<span>Pos.</span>
 					<span>Palpiteiro</span>
 					<span className="text-center">Acertos</span>
@@ -59,8 +60,14 @@ export default function Leaderboard() {
 				</div>
 
 				{rows.length === 0 && (
-					<div className="px-6 py-8 text-sm text-slate-400">
-						O ranking será preenchido quando houver partidas liquidadas.
+					<div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
+						<MaterialIcon name="emoji_events" className="text-3xl text-accent" />
+						<p className="text-sm text-slate-300">
+							O ranking aparece após a apuração da primeira partida.
+						</p>
+						<Link href="/matches" className="rounded-lg border border-primary px-4 py-2 text-sm font-bold text-blue-300 hover:bg-primary/20 focus-visible:outline-2 focus-visible:outline-white transition-colors">
+							Ver jogos
+					</Link>
 					</div>
 				)}
 
@@ -85,7 +92,7 @@ export default function Leaderboard() {
 							</div>
 							<div>
 								<p className="font-bold text-sm">{row.name}</p>
-								<p className="text-[10px] text-slate-500">
+								<p className="text-xs text-slate-300">
 									{row.exactHits} placares exatos
 								</p>
 							</div>

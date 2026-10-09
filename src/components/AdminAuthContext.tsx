@@ -50,17 +50,20 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 	const isLoading = !hydrated;
 
 	useEffect(() => {
-		const savedToken = localStorage.getItem(STORAGE_TOKEN_KEY);
-		const savedAdmin = localStorage.getItem(STORAGE_KEY);
-		if (savedToken && savedAdmin) {
-			try {
-				setAdmin(JSON.parse(savedAdmin) as AuthUser);
-				setAdminToken(savedToken);
-			} catch {
-				persistAdmin(null, null);
+		const timer = setTimeout(() => {
+			const savedToken = localStorage.getItem(STORAGE_TOKEN_KEY);
+			const savedAdmin = localStorage.getItem(STORAGE_KEY);
+			if (savedToken && savedAdmin) {
+				try {
+					setAdmin(JSON.parse(savedAdmin) as AuthUser);
+					setAdminToken(savedToken);
+				} catch {
+					persistAdmin(null, null);
+				}
 			}
-		}
-		setHydrated(true);
+			setHydrated(true);
+		}, 0);
+		return () => clearTimeout(timer);
 	}, []);
 
 	useEffect(() => {

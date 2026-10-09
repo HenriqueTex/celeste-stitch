@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import MaterialIcon from "@/components/icons/MaterialIcon";
 import { useAuth } from "@/components/AuthContext";
+import { useModalAccessibility } from "@/hooks/use-modal-accessibility";
 import { apiFetch } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
 import type {
@@ -75,7 +76,7 @@ function generateQR(content: string) {
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
 	return (
-		<label className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1 block">
+		<label className="text-xs font-black uppercase tracking-wider text-slate-300 mb-1 block">
 			{children}
 		</label>
 	);
@@ -115,12 +116,12 @@ function StepIndicator({ current, mode }: { current: Step; mode: Mode }) {
 			{steps.map((s, i) => (
 				<div key={s} className="flex items-center gap-2">
 					<div
-						className={`size-6 rounded-full flex items-center justify-center text-[10px] font-black transition-all ${
+						className={`size-6 rounded-full flex items-center justify-center text-xs font-black transition-all ${
 							i < idx
 								? "bg-emerald-500 text-white"
 								: i === idx
 									? "bg-primary text-white"
-									: "bg-white/10 text-slate-500"
+									: "bg-white/10 text-slate-300"
 						}`}
 					>
 						{i < idx ? <MaterialIcon name="check" className="text-[12px]" /> : i + 1}
@@ -253,6 +254,8 @@ export default function BetModal({
 		});
 		onClose();
 	}, [onClose]);
+	const titleId = useId();
+	const dialogRef = useModalAccessibility(open && Boolean(match), handleClose);
 
 	const totalTickets = useMemo(
 		() => lines.reduce((sum, l) => sum + l.tickets, 0),
@@ -412,12 +415,17 @@ export default function BetModal({
 			onClick={handleClose}
 		>
 			<div
+				ref={dialogRef}
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby={titleId}
+				tabIndex={-1}
 				className="glass-panel w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden animate-[modal-in_0.25s_ease-out] max-h-[92dvh] flex flex-col"
 				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/8 shrink-0">
 					<div>
-						<h3 className="font-black text-base uppercase italic tracking-tight">
+						<h3 id={titleId} className="font-black text-base uppercase italic tracking-tight">
 							{step === "confirmation"
 								? "Palpite Registrado!"
 								: step === "login"
@@ -426,7 +434,7 @@ export default function BetModal({
 										? "Criar conta"
 										: "Fazer Palpite"}
 						</h3>
-						<p className="text-[10px] text-slate-500 font-bold mt-0.5">
+						<p className="text-xs text-slate-300 font-bold mt-0.5">
 							{headerLabel} · {formatCurrency(match.ticketPrice)}/bilhete
 						</p>
 					</div>
@@ -474,7 +482,7 @@ export default function BetModal({
 
 							<div className="flex items-center gap-3 my-2">
 								<div className="flex-1 h-px bg-white/10" />
-								<span className="text-[10px] text-slate-500 uppercase font-black tracking-widest">
+								<span className="text-xs text-slate-300 uppercase font-black tracking-widest">
 									ou
 								</span>
 								<div className="flex-1 h-px bg-white/10" />
@@ -492,7 +500,7 @@ export default function BetModal({
 								Apostar como Visitante
 							</button>
 
-							<p className="text-[10px] text-slate-500 text-center mt-3 leading-relaxed">
+							<p className="text-xs text-slate-300 text-center mt-3 leading-relaxed">
 								Como visitante você não terá histórico salvo de palpites.
 								Os dados (CPF, telefone e PIX) ainda são obrigatórios para
 								recebermos o pagamento e enviarmos o prêmio.
@@ -653,7 +661,7 @@ export default function BetModal({
 									placeholder="João da Silva"
 								/>
 								{errors.name && (
-									<p className="text-red-400 text-[10px] mt-1">{errors.name}</p>
+									<p className="text-red-400 text-xs mt-1">{errors.name}</p>
 								)}
 							</div>
 
@@ -665,7 +673,7 @@ export default function BetModal({
 									placeholder="000.000.000-00"
 								/>
 								{errors.cpf && (
-									<p className="text-red-400 text-[10px] mt-1">{errors.cpf}</p>
+									<p className="text-red-400 text-xs mt-1">{errors.cpf}</p>
 								)}
 							</div>
 
@@ -679,7 +687,7 @@ export default function BetModal({
 									disabled={mode === "authenticated"}
 								/>
 								{errors.email && (
-									<p className="text-red-400 text-[10px] mt-1">{errors.email}</p>
+									<p className="text-red-400 text-xs mt-1">{errors.email}</p>
 								)}
 							</div>
 
@@ -692,7 +700,7 @@ export default function BetModal({
 									placeholder="(31) 99999-9999"
 								/>
 								{errors.phone && (
-									<p className="text-red-400 text-[10px] mt-1">{errors.phone}</p>
+									<p className="text-red-400 text-xs mt-1">{errors.phone}</p>
 								)}
 							</div>
 
@@ -704,7 +712,7 @@ export default function BetModal({
 									placeholder="CPF, e-mail, celular ou chave aleatória"
 								/>
 								{errors.pixKey && (
-									<p className="text-red-400 text-[10px] mt-1">{errors.pixKey}</p>
+									<p className="text-red-400 text-xs mt-1">{errors.pixKey}</p>
 								)}
 							</div>
 
@@ -737,7 +745,7 @@ export default function BetModal({
 										className="bg-white/3 border border-white/8 rounded-xl p-4 flex flex-col gap-3"
 									>
 										<div className="flex items-center justify-between">
-											<p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+											<p className="text-xs font-bold uppercase tracking-widest text-primary">
 												Palpite {idx + 1}
 											</p>
 											{lines.length > 1 && (
@@ -753,7 +761,7 @@ export default function BetModal({
 
 										<div className="flex items-center justify-center gap-3">
 											<div className="flex flex-col items-center gap-1.5 flex-1">
-												<span className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+												<span className="text-xs font-black uppercase tracking-wider text-slate-300">
 													{match.homeTeam}
 												</span>
 												<div className="flex items-center gap-1">
@@ -788,7 +796,7 @@ export default function BetModal({
 											</span>
 
 											<div className="flex flex-col items-center gap-1.5 flex-1">
-												<span className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+												<span className="text-xs font-black uppercase tracking-wider text-slate-300">
 													{match.awayTeam}
 												</span>
 												<div className="flex items-center gap-1">
@@ -823,7 +831,7 @@ export default function BetModal({
 
 										<div className="flex items-center justify-between">
 											<div>
-												<p className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+												<p className="text-xs font-black uppercase tracking-wider text-slate-300">
 													Bilhetes
 												</p>
 												<div className="flex items-center gap-2 mt-1">
@@ -857,7 +865,7 @@ export default function BetModal({
 												</div>
 											</div>
 											<div className="text-right">
-												<p className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+												<p className="text-xs font-black uppercase tracking-wider text-slate-300">
 													Subtotal
 												</p>
 												<p className="text-base font-black italic text-primary">
@@ -879,7 +887,7 @@ export default function BetModal({
 
 							<div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
 								<div>
-									<p className="text-[10px] text-primary font-bold uppercase tracking-wider">
+									<p className="text-xs text-primary font-bold uppercase tracking-wider">
 										{lines.length}{" "}
 										{lines.length === 1 ? "palpite" : "palpites"} ·{" "}
 										{totalTickets}{" "}
@@ -890,7 +898,7 @@ export default function BetModal({
 									</p>
 								</div>
 								<div className="text-right">
-									<p className="text-[10px] text-slate-500 font-bold uppercase">
+									<p className="text-xs text-slate-300 font-bold uppercase">
 										Pagamento
 									</p>
 									<p className="text-lg font-black italic text-emerald-400">
@@ -932,13 +940,13 @@ export default function BetModal({
 							</div>
 
 							<div className="text-center bg-primary/10 border border-primary/20 rounded-xl py-4">
-								<p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">
+								<p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">
 									Valor a pagar
 								</p>
 								<p className="text-4xl font-black italic">
 									{formatCurrency(Number(order.payment.amount))}
 								</p>
-								<p className="text-xs text-slate-500 mt-1">
+								<p className="text-xs text-slate-300 mt-1">
 									Pedido #{order.payment.id} · {order.bets.length}{" "}
 									{order.bets.length === 1 ? "palpite" : "palpites"} ·{" "}
 									{headerLabel}
@@ -960,7 +968,7 @@ export default function BetModal({
 										className="block"
 									/>
 								</div>
-								<p className="text-[11px] text-slate-500 text-center">
+								<p className="text-[11px] text-slate-300 text-center">
 									Escaneie com o app do seu banco ou copie o código PIX abaixo.
 								</p>
 							</div>
@@ -968,7 +976,7 @@ export default function BetModal({
 							<div>
 								<FieldLabel>Código PIX</FieldLabel>
 								<div className="flex gap-2">
-									<div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-[10px] font-mono text-slate-400 overflow-hidden text-ellipsis whitespace-nowrap">
+									<div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs font-mono text-slate-400 overflow-hidden text-ellipsis whitespace-nowrap">
 										{pixCode}
 									</div>
 									<button
@@ -1059,7 +1067,7 @@ export default function BetModal({
 
 							<div className="w-full bg-white/3 border border-white/8 rounded-2xl p-4 space-y-3 text-left">
 								<div className="flex flex-col gap-2">
-									<span className="text-[11px] text-slate-500 font-bold uppercase">
+									<span className="text-[11px] text-slate-300 font-bold uppercase">
 										Palpites ({order.bets.length})
 									</span>
 									{order.bets.map((bet) => (
@@ -1079,14 +1087,14 @@ export default function BetModal({
 								</div>
 								<div className="h-px bg-white/5" />
 								<div className="flex justify-between">
-									<span className="text-[11px] text-slate-500 font-bold uppercase">
+									<span className="text-[11px] text-slate-300 font-bold uppercase">
 										Total de bilhetes
 									</span>
 									<span className="text-sm font-black">{totalTickets}</span>
 								</div>
 								<div className="h-px bg-white/5" />
 								<div className="flex justify-between">
-									<span className="text-[11px] text-slate-500 font-bold uppercase">
+									<span className="text-[11px] text-slate-300 font-bold uppercase">
 										Status
 									</span>
 									{(() => {
@@ -1114,7 +1122,7 @@ export default function BetModal({
 								</div>
 								<div className="h-px bg-white/5" />
 								<div className="flex justify-between">
-									<span className="text-[11px] text-slate-500 font-bold uppercase">
+									<span className="text-[11px] text-slate-300 font-bold uppercase">
 										Valor
 									</span>
 									<span className="text-sm font-black text-primary">

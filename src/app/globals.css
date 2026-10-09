@@ -120,6 +120,7 @@
 @theme inline {
 	/* Colors */
 	--color-primary: #2D3FEF;
+	--color-primary-foreground: #ffffff;
 	--color-accent: #F59E0B;
 	--color-background-light: #f6f6f8;
 	--color-background-dark: #050512;
@@ -200,6 +201,13 @@
 	to {
 		opacity: 1;
 		transform: scale(1) translateY(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pulse-live,
+	.bar-fill {
+		animation: none;
 	}
 }
 

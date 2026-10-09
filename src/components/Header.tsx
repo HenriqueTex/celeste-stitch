@@ -40,9 +40,10 @@ export default function Header() {
 							<MaterialIcon name="hub" className="text-lg font-bold" />
 						</div>
 						<div className="flex flex-col leading-none">
-							<span className="text-base sm:text-lg font-black italic tracking-tight text-white">
-								BOLÃO CELESTE
-							</span>
+						<span className="text-sm min-[400px]:text-base sm:text-lg font-black italic tracking-tight text-white">
+							<span className="min-[400px]:hidden">CELESTE</span>
+							<span className="hidden min-[400px]:inline">BOLÃO CELESTE</span>
+						</span>
 							{/* Subtítulo só em desktop */}
 							<span className="hidden sm:block text-[9px] font-bold uppercase tracking-widest text-primary/70">
 								Comunidade de Torcedores
