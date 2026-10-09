@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import Header from "@/components/Header";
+import ActivityTicker from "@/components/ActivityTicker";
 import MobileNav from "@/components/MobileNav";
 import { BettingProvider } from "@/components/BettingContext";
 export default function LayoutShell({
@@ -18,6 +19,7 @@ export default function LayoutShell({
 					Ir para o conteúdo
 				</a>
 				<Header />
+				<ActivityTicker />
 				<main id="main-content" className="client-main" tabIndex={-1}>
 					{children}
 				</main>
