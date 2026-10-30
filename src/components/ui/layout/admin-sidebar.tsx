@@ -6,6 +6,7 @@ import {
 	CalendarDays,
 	LayoutDashboard,
 	Settings,
+	Shield,
 	Users,
 	Wallet,
 	Medal,
@@ -51,6 +52,11 @@ export function AdminSidebar({
 			title: "Partidas",
 			url: "/admin/matches",
 			icon: CalendarDays,
+		},
+		{
+			title: "Times",
+			url: "/admin/teams",
+			icon: Shield,
 		},
 		{
 			title: "Usuários",

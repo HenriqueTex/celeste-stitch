@@ -398,6 +398,14 @@ body:has(.client-shell) {
 	font-size: 14px;
 	font-weight: 700;
 }
+.avatar-letter {
+	overflow: hidden;
+}
+.avatar-letter img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
 .account-name {
 	max-width: 160px;
 	overflow: hidden;
@@ -2810,6 +2818,50 @@ body:has(.client-shell) {
 	overflow-y: auto;
 	overscroll-behavior: contain;
 	padding-top: 16px;
+}
+/* Profile photo */
+.avatar-field {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+	gap: 6px 16px;
+	padding: 18px 24px 0;
+}
+.avatar-preview {
+	display: grid;
+	place-items: center;
+	width: 72px;
+	height: 72px;
+	overflow: hidden;
+	border-radius: 50%;
+	background: var(--brand-primary);
+	color: #fff;
+	font-size: 24px;
+	font-weight: 700;
+}
+.avatar-preview img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.avatar-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 14px;
+}
+.avatar-actions .client-button-secondary {
+	min-height: 44px;
+	padding: 8px 16px;
+}
+.avatar-actions small {
+	flex-basis: 100%;
+	color: var(--text-muted);
+	font-size: 13px;
+}
+.avatar-field .form-error {
+	grid-column: 1 / -1;
+	margin-top: 4px;
 }
 .auth-options {
 	display: flex;

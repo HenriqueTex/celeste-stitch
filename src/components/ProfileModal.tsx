@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { CircleCheck, X } from "lucide-react";
+import { Camera, CircleCheck, X } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
 import ClientField from "@/components/ClientField";
 import { useModalAccessibility } from "@/hooks/use-modal-accessibility";
 import { formatCpf, formatPhone } from "@/lib/format";
 
 type FieldName = "fullName" | "nickname" | "cpf" | "phone" | "pixKey";
+
+const AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp"];
+const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 
 export default function ProfileModal({
 	open,
@@ -16,7 +19,10 @@ export default function ProfileModal({
 	open: boolean;
 	onClose: () => void;
 }) {
-	const { user, updateProfile } = useAuth();
+	const { user, updateProfile, updateAvatar } = useAuth();
+	const avatarInput = useRef<HTMLInputElement>(null);
+	const [avatarBusy, setAvatarBusy] = useState(false);
+	const [avatarError, setAvatarError] = useState("");
 	const [form, setForm] = useState<Record<FieldName, string>>({
 		fullName: "",
 		nickname: "",
@@ -75,6 +81,29 @@ export default function ProfileModal({
 		},
 	});
 
+	const changeAvatar = async (file: File | null) => {
+		setAvatarError("");
+		if (file && !AVATAR_TYPES.includes(file.type)) {
+			setAvatarError("Use uma imagem PNG, JPG ou WebP.");
+			return;
+		}
+		if (file && file.size > AVATAR_MAX_BYTES) {
+			setAvatarError("A foto pode ter no máximo 2 MB.");
+			return;
+		}
+		try {
+			setAvatarBusy(true);
+			await updateAvatar(file);
+		} catch (reason) {
+			setAvatarError(
+				reason instanceof Error ? reason.message : "Não foi possível salvar a foto.",
+			);
+		} finally {
+			setAvatarBusy(false);
+			if (avatarInput.current) avatarInput.current.value = "";
+		}
+	};
+
 	const handleSave = async (event: React.FormEvent) => {
 		event.preventDefault();
 		setError("");
@@ -128,6 +157,54 @@ export default function ProfileModal({
 						<X size={20} aria-hidden="true" />
 					</button>
 				</header>
+
+				<div className="avatar-field">
+					<span className="avatar-preview" aria-hidden="true">
+						{user?.avatarUrl ? (
+							// eslint-disable-next-line @next/next/no-img-element
+							<img src={user.avatarUrl} alt="" width={72} height={72} />
+						) : (
+							user?.initials
+						)}
+					</span>
+					<div className="avatar-actions">
+						<input
+							ref={avatarInput}
+							type="file"
+							accept={AVATAR_TYPES.join(",")}
+							hidden
+							onChange={(event) => void changeAvatar(event.target.files?.[0] ?? null)}
+						/>
+						<button
+							type="button"
+							className="client-button-secondary"
+							disabled={avatarBusy}
+							onClick={() => avatarInput.current?.click()}
+						>
+							<Camera size={17} aria-hidden="true" />
+							{avatarBusy
+								? "Enviando…"
+								: user?.avatarUrl
+									? "Trocar foto"
+									: "Adicionar foto"}
+						</button>
+						{user?.avatarUrl && !avatarBusy && (
+							<button
+								type="button"
+								className="text-link danger-link"
+								onClick={() => void changeAvatar(null)}
+							>
+								Remover foto
+							</button>
+						)}
+						<small>PNG, JPG ou WebP, até 2 MB.</small>
+					</div>
+					{avatarError && (
+						<p className="form-error" role="alert">
+							{avatarError}
+						</p>
+					)}
+				</div>
 
 				<form
 					noValidate

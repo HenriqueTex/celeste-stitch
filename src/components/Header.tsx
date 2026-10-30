@@ -88,7 +88,12 @@ export default function Header() {
 								onClick={() => setMenu(!menu)}
 							>
 								<span className="avatar-letter" aria-hidden="true">
-									{user?.initials || displayName.charAt(0)}
+									{user?.avatarUrl ? (
+										// eslint-disable-next-line @next/next/no-img-element
+										<img src={user.avatarUrl} alt="" width={40} height={40} />
+									) : (
+										user?.initials || displayName.charAt(0)
+									)}
 								</span>
 								<span className="account-name">{displayName}</span>
 								<ChevronDown size={16} aria-hidden="true" />

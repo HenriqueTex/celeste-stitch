@@ -38,6 +38,8 @@ interface AuthContextType {
 	logout: () => Promise<void>;
 	refreshProfile: () => Promise<void>;
 	updateProfile: (payload: ProfilePayload) => Promise<AuthUser>;
+	/** Uploads a new profile photo, or removes it with `null`. */
+	updateAvatar: (file: File | null) => Promise<AuthUser>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -176,6 +178,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		return profile;
 	};
 
+	const updateAvatar = async (file: File | null) => {
+		if (!token) {
+			throw new Error("Faça login para atualizar seu perfil.");
+		}
+		const body = new FormData();
+		if (file) body.append("avatar", file);
+		const profile = await apiFetch<AuthUser>("/account/avatar", {
+			method: file ? "POST" : "DELETE",
+			token,
+			body: file ? body : undefined,
+		});
+		setUser(profile);
+		persistSession(profile, token);
+		return profile;
+	};
+
 	const value: AuthContextType = {
 		user,
 		token,
@@ -186,6 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		logout,
 		refreshProfile,
 		updateProfile,
+		updateAvatar,
 	};
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
