@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
 import AuthModal from "@/components/AuthModal";
-import Constellation from "@/components/Constellation";
 import ProfileModal from "@/components/ProfileModal";
 const links = [
 	{ href: "/", label: "Início" },
@@ -55,10 +54,15 @@ export default function Header() {
 			<header className="client-header">
 				<div className="client-header-inner">
 					<Link href="/" className="brand">
-						<span className="brand-mark" aria-hidden="true">
-							<Constellation />
-						</span>
-						<span>
+						{/* eslint-disable-next-line @next/next/no-img-element */}
+						<img
+							className="brand-mark"
+							src="/brand/icon.svg"
+							alt=""
+							width={44}
+							height={44}
+						/>
+						<span className="brand-wordmark">
 							Bolão <strong>Celeste</strong>
 						</span>
 					</Link>

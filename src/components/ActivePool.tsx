@@ -1,4 +1,7 @@
-import { Info, Ticket, Trophy, Users } from "lucide-react";
+"use client";
+import { useRef } from "react";
+import { ChevronRight, Info, Target, Ticket, Trophy, Users } from "lucide-react";
+import Constellation from "@/components/Constellation";
 import { formatCurrency, formatScore } from "@/lib/format";
 import type { HomeResponse, MatchItem } from "@/lib/types";
 export default function ActivePool({
@@ -10,21 +13,36 @@ export default function ActivePool({
 }) {
 	const stats = match.stats;
 	const consensus = stats.consensus;
+	const help = useRef<HTMLDetailsElement>(null);
+	const explainPrize = () => {
+		const details = help.current;
+		if (!details) return;
+		details.open = true;
+		details.scrollIntoView({ behavior: "smooth", block: "nearest" });
+		details.querySelector("summary")?.focus({ preventScroll: true });
+	};
 	return (
 		<aside className="pool-summary" aria-labelledby="pool-heading">
+			<Constellation className="pool-stars" />
 			<h2 id="pool-heading" className="pool-title">
 				Bolão desta partida
 			</h2>
 			<p className="pool-value">{formatCurrency(stats.revenue)}</p>
 			<p className="muted">em bilhetes com pagamento confirmado</p>
 			{distribution && (
-				<p className="pool-prize">
+				<button
+					type="button"
+					className="pool-prize"
+					aria-controls="pool-help"
+					onClick={explainPrize}
+				>
 					<Trophy size={18} aria-hidden="true" />
 					<span>
-						<strong>{distribution.winners}% vai para quem cravar o placar</strong>
-						, dividido entre os bilhetes vencedores.
+						<strong>{distribution.winners}% vai para quem cravar o placar,</strong>{" "}
+						dividido entre os bilhetes vencedores.
 					</span>
-				</p>
+					<ChevronRight className="pool-prize-chevron" size={20} aria-hidden="true" />
+				</button>
 			)}
 			<dl className="pool-numbers">
 				<div>
@@ -41,20 +59,22 @@ export default function ActivePool({
 					</dt>
 					<dd>{stats.tickets}</dd>
 				</div>
+				{consensus && stats.tickets > 0 && (
+					<div>
+						<dt>
+							<Target size={18} aria-hidden="true" />
+							Placar mais escolhido
+						</dt>
+						<dd>{formatScore(consensus.homeScore, consensus.awayScore)}</dd>
+					</div>
+				)}
 			</dl>
-			{consensus && stats.tickets > 0 ? (
-				<div className="consensus-note">
-					<span>Placar mais escolhido</span>
-					<strong>{formatScore(consensus.homeScore, consensus.awayScore)}</strong>
-					<p>
-						{consensus.tickets} de {stats.tickets} bilhetes confirmados (
-						{Math.round((consensus.tickets / stats.tickets) * 100)}%).
-					</p>
-				</div>
-			) : (
-				<p className="empty-inline">Ainda sem palpites confirmados.</p>
-			)}
-			<details className="pool-help">
+			<p className="consensus-note">
+				{consensus && stats.tickets > 0
+					? `${consensus.tickets} de ${stats.tickets} bilhetes confirmados (${Math.round((consensus.tickets / stats.tickets) * 100)}%).`
+					: "Ainda sem palpites confirmados."}
+			</p>
+			<details id="pool-help" className="pool-help" ref={help}>
 				<summary>
 					<Info size={16} aria-hidden="true" />
 					Como funciona o bolão

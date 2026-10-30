@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="290" viewBox="0 0 1140 290"><defs>
+      <linearGradient id="light-gradient" x1="0" y1="1" x2="1" y2="0">
+       <stop offset="0" stop-color="#001A60"/><stop offset="0.48" stop-color="#0032A6"/><stop offset="1" stop-color="#145EFF"/>
+      </linearGradient>
+      <radialGradient id="light-shine" cx="0.92" cy="0.10" r="1.1"><stop offset="0" stop-color="#7EB0FF" stop-opacity=".16"/><stop offset="1" stop-color="#7EB0FF" stop-opacity="0"/></radialGradient>
+      <clipPath id="light-clip"><rect x="10" y="10" width="1004" height="1004" rx="211"/></clipPath>
+    </defs>
+      <g transform="translate(16 15) scale(0.25)">
+    <rect x="10" y="10" width="1004" height="1004" rx="211" fill="url(#light-gradient)"/>
+    <rect x="10" y="10" width="1004" height="1004" rx="211" fill="url(#light-shine)"/>
+    <g clip-path="url(#light-clip)">
+      <path d="M-95 501 C184 478 434 681 489 1070" fill="none" stroke="#FFFFFF" stroke-width="29" stroke-linecap="round" opacity="0.99"/>
+      <path d="M-85 566 C142 589 335 786 342 1073" fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" opacity="0.82"/>
+    </g>
+    <polygon points="580.00,125.00 601.63,175.23 656.08,180.28 615.00,216.37 627.02,269.72 580.00,241.80 532.98,269.72 545.00,216.37 503.92,180.28 558.37,175.23" fill="white"/><polygon points="315.00,296.00 336.36,345.60 390.13,350.59 349.56,386.23 361.44,438.91 315.00,411.34 268.56,438.91 280.44,386.23 239.87,350.59 293.64,345.60" fill="white"/><polygon points="774.00,309.00 795.63,359.23 850.08,364.28 809.00,400.37 821.02,453.72 774.00,425.80 726.98,453.72 739.00,400.37 697.92,364.28 752.37,359.23" fill="white"/><polygon points="614.00,474.00 625.36,500.37 653.94,503.02 632.37,521.97 638.69,549.98 614.00,535.32 589.31,549.98 595.63,521.97 574.06,503.02 602.64,500.37" fill="white"/><polygon points="598.00,679.00 619.63,729.23 674.08,734.28 633.00,770.37 645.02,823.72 598.00,795.80 550.98,823.72 563.00,770.37 521.92,734.28 576.37,729.23" fill="white"/>
+    <rect x="10" y="10" width="1004" height="1004" rx="211" fill="none" stroke="#4A7DFF" stroke-width="10" stroke-opacity="0.6"/>
+    </g>
+      <g font-family="Inter Display, Inter, Arial, sans-serif" font-weight="800" font-size="119" letter-spacing="-5.6">
+        <text x="310" y="132" fill="#07142F">Bolão</text>
+        <text x="310" y="248" fill="#1445D6">Celeste</text>
+      </g></svg>

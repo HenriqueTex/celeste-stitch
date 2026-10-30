@@ -1,5 +1,4 @@
 "use client";
-import Constellation from "@/components/Constellation";
 import { LoadingMatch, MatchWorkspace } from "@/components/MatchPrediction";
 import MatchHistory from "@/components/MatchHistory";
 import TopPredictors from "@/components/TopPredictors";
@@ -9,9 +8,9 @@ import type { HomeResponse } from "@/lib/types";
 export default function HomeDashboard() {
 	const { data, loading, error, reload } = useResource<HomeResponse>("/home");
 	return (
-		<div className="home-dashboard">
+		<div className="home-dashboard home-page">
 			<div className="page-intro home-intro">
-				<Constellation className="intro-stars" />
+				<p className="hero-kicker">Bolão Celeste</p>
 				<h1>Qual vai ser o placar?</h1>
 				<p>Escolha o resultado da próxima partida do Cruzeiro.</p>
 			</div>

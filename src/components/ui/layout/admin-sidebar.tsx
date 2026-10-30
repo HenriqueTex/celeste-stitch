@@ -6,7 +6,6 @@ import {
 	CalendarDays,
 	LayoutDashboard,
 	Settings,
-	ShieldCheck,
 	Users,
 	Wallet,
 	Medal,
@@ -77,9 +76,14 @@ export function AdminSidebar({
 							asChild
 						>
 							<Link href="/admin">
-								<div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-									<ShieldCheck className="size-4" />
-								</div>
+								{/* eslint-disable-next-line @next/next/no-img-element */}
+								<img
+									src="/brand/icon.svg"
+									alt=""
+									width={32}
+									height={32}
+									className="size-8 shrink-0"
+								/>
 								<div className="grid flex-1 text-left text-sm leading-tight">
 									<span className="truncate font-semibold">Bolão Celeste</span>
 									<span className="truncate text-xs">Administração</span>

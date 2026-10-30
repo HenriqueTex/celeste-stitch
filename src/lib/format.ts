@@ -34,6 +34,51 @@ export function formatMatchDate(value: string) {
 	}).format(new Date(value));
 }
 
+export function formatWeekdayDate(value: string) {
+	return new Intl.DateTimeFormat("pt-BR", {
+		timeZone: "America/Sao_Paulo",
+		weekday: "long",
+		day: "numeric",
+		month: "short",
+	}).format(new Date(value));
+}
+
+export function formatTime(value: string) {
+	return new Intl.DateTimeFormat("pt-BR", {
+		timeZone: "America/Sao_Paulo",
+		hour: "2-digit",
+		minute: "2-digit",
+	}).format(new Date(value));
+}
+
+/** Day and abbreviated month, split for a stacked date block. */
+export function formatDayMonth(value: string) {
+	const parts = new Intl.DateTimeFormat("pt-BR", {
+		timeZone: "America/Sao_Paulo",
+		day: "2-digit",
+		month: "short",
+	}).formatToParts(new Date(value));
+	return {
+		day: parts.find((part) => part.type === "day")?.value ?? "",
+		month: (parts.find((part) => part.type === "month")?.value ?? "").replace(".", ""),
+	};
+}
+
+/** Calendar days until a date in Brasília time: "Hoje", "Amanhã", "Em 3 dias". */
+export function formatCountdown(value: string, now = Date.now()) {
+	const day = (time: number) =>
+		new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(
+			new Date(time),
+		);
+	const days = Math.round(
+		(Date.parse(day(new Date(value).getTime())) - Date.parse(day(now))) /
+			86_400_000,
+	);
+	if (days <= 0) return "Hoje";
+	if (days === 1) return "Amanhã";
+	return `Em ${days} dias`;
+}
+
 export function formatRelativeTime(value: string) {
 	const diff = Date.now() - new Date(value).getTime();
 	const minutes = Math.max(1, Math.round(diff / 60000));

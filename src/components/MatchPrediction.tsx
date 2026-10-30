@@ -1,12 +1,10 @@
 "use client";
 import { Fragment, useEffect, useState } from "react";
-import { ArrowRight, Clock3 } from "lucide-react";
+import { ArrowRight, ChevronRight, Clock3, Trophy } from "lucide-react";
 import ActivePool from "@/components/ActivePool";
 import ScorePicker, { validScore } from "@/components/ScorePicker";
 import TeamBadge from "@/components/TeamBadge";
 import { useBetting } from "@/components/BettingContext";
-import { focusScorePicker } from "@/components/MobileNav";
-import { useResource } from "@/hooks/use-resource";
 import {
 	formatCurrency,
 	formatMatchDate,
@@ -14,7 +12,47 @@ import {
 	isClubTeam,
 	plural,
 } from "@/lib/format";
-import type { HomeResponse, MatchItem } from "@/lib/types";
+import type { BetOrderResponse, HomeResponse, MatchItem } from "@/lib/types";
+import type { PredictionLine } from "@/components/BettingContext";
+
+function focusScorePicker() {
+	const panel = document.getElementById("palpite");
+	if (!panel) return false;
+	panel.scrollIntoView({ behavior: "smooth", block: "start" });
+	panel
+		.querySelector<HTMLInputElement>(".score-value:not(:disabled)")
+		?.focus({ preventScroll: true });
+	return true;
+}
+
+export type PredictionTone = "empty" | "draft" | "pending" | "confirmed";
+
+/** Open for picks: published, not started and before the betting deadline. */
+export function acceptsPicks(match: MatchItem, now = Date.now()) {
+	return (
+		match.status === "open" &&
+		new Date(match.scheduledAt).getTime() > now &&
+		new Date(match.bettingDeadlineAt).getTime() > now
+	);
+}
+
+/** What the visitor has done for a match: nothing, a draft, or an order. */
+export function predictionState(
+	order: BetOrderResponse | undefined,
+	draft: PredictionLine,
+): { tone: PredictionTone; label: string } {
+	if (order)
+		return order.payment.status === "confirmed"
+			? { tone: "confirmed", label: "Palpite confirmado" }
+			: { tone: "pending", label: "Pedido aguardando pagamento" };
+	const touched = draft.id !== "first" || draft.home !== 0 || draft.away !== 0;
+	if (touched && validScore(draft.home) && validScore(draft.away))
+		return {
+			tone: "draft",
+			label: `Rascunho ${formatScore(Number(draft.home), Number(draft.away))}`,
+		};
+	return { tone: "empty", label: "Sem palpite" };
+}
 
 export function LoadingMatch() {
 	return (
@@ -44,9 +82,7 @@ function MatchChooser({
 	return (
 		<div className="match-chooser" role="group" aria-label="Escolha a partida">
 			{choices.map((item) => {
-				const order = orderFor(item.id);
-				const draft = linesFor(item.id)[0];
-				const touched = draft.id !== "first" || draft.home !== 0 || draft.away !== 0;
+				const state = predictionState(orderFor(item.id), linesFor(item.id)[0]);
 				return (
 					<button
 						key={item.id}
@@ -61,15 +97,8 @@ function MatchChooser({
 							{formatMatchDate(item.scheduledAt)}
 							<span className="chooser-competition"> · {item.competition}</span>
 						</span>
-						<small>
-							{order
-								? order.payment.status === "confirmed"
-									? "Palpite confirmado"
-									: "Pedido aguardando pagamento"
-								: touched && validScore(draft.home) && validScore(draft.away)
-									? `Rascunho ${formatScore(Number(draft.home), Number(draft.away))}`
-									: "Sem palpite"}
-						</small>
+						<small data-tone={state.tone}>{state.label}</small>
+						<ChevronRight className="chooser-chevron" size={18} aria-hidden="true" />
 					</button>
 				);
 			})}
@@ -80,11 +109,9 @@ function MatchChooser({
 export function MatchWorkspace({
 	matches,
 	distribution,
-	alwaysShowChooser = false,
 }: {
 	matches: MatchItem[];
 	distribution?: HomeResponse["poolDistribution"];
-	alwaysShowChooser?: boolean;
 }) {
 	const [selectedId, setSelectedId] = useState<number | null>(() => {
 		const time = Date.now();
@@ -146,14 +173,11 @@ export function MatchWorkspace({
 				away: order.bets[0].awayScorePrediction,
 			}
 		: lines[0];
-	const isOpen =
-		match.status === "open" &&
-		new Date(match.scheduledAt).getTime() > now &&
-		new Date(match.bettingDeadlineAt).getTime() > now;
+	const isOpen = acceptsPicks(match, now);
 	const choices = available.some((item) => item.id === match.id)
 		? available
 		: [match, ...available];
-	const showChooser = alwaysShowChooser || choices.length > 1;
+	const showChooser = choices.length > 1;
 	const totalTickets = order
 		? order.bets.reduce((sum, bet) => sum + bet.tickets, 0)
 		: lines.reduce((sum, line) => sum + line.tickets, 0);
@@ -180,7 +204,10 @@ export function MatchWorkspace({
 					/>
 				)}
 				<div className="match-meta">
-					<span>{match.competition}</span>
+					<span className="match-competition">
+						<Trophy size={16} aria-hidden="true" />
+						{match.competition}
+					</span>
 					<span className={isOpen ? "status-open" : "status-pending"}>
 						{isOpen ? "Palpites abertos" : "Palpites encerrados"}
 					</span>
@@ -295,19 +322,4 @@ export function MatchWorkspace({
 			<ActivePool match={match} distribution={distribution} />
 		</div>
 	);
-}
-export default function MatchPrediction() {
-	const { data, loading, error, reload } =
-		useResource<MatchItem[]>("/matches/active");
-	if (loading) return <LoadingMatch />;
-	if (error)
-		return (
-			<div className="client-panel error-panel" role="alert">
-				<p>Não foi possível carregar as partidas.</p>
-				<button className="client-button-secondary" onClick={reload}>
-					Tentar novamente
-				</button>
-			</div>
-		);
-	return <MatchWorkspace matches={data ?? []} alwaysShowChooser />;
 }

@@ -13,7 +13,7 @@ export default function LayoutShell({
 	if (pathname?.startsWith("/admin")) return <>{children}</>;
 	return (
 		<div className="client-shell">
-			<div className="starry-bg" aria-hidden="true" />
+			{pathname === "/" && <div className="editorial-art" aria-hidden="true" />}
 			<BettingProvider>
 				<a className="skip-link" href="#main-content">
 					Ir para o conteúdo
@@ -24,7 +24,15 @@ export default function LayoutShell({
 					{children}
 				</main>
 				<footer className="client-footer">
-					<span>Bolão Celeste</span>
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img
+						className="footer-logo"
+						src="/brand/logo-light.png"
+						alt="Bolão Celeste"
+						width={142}
+						height={36}
+						loading="lazy"
+					/>
 					<span>Uma comunidade. A mesma paixão.</span>
 				</footer>
 				<MobileNav />

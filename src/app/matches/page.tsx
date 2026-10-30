@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
-import MatchHistory from "@/components/MatchHistory";
-import MatchPrediction from "@/components/MatchPrediction";
+import MatchesBoard from "@/components/MatchesBoard";
 export const metadata: Metadata = { title: "Jogos — Bolão Celeste" };
 export default function MatchesPage() {
 	return (
 		<div className="home-dashboard">
 			<div className="page-intro">
 				<h1>Jogos do Cruzeiro</h1>
-				<p>Todas as partidas abertas, seu status em cada uma e os últimos resultados.</p>
+				<p>
+					A agenda das próximas partidas, com o bolão de cada uma, e como terminaram
+					os últimos jogos.
+				</p>
 			</div>
-			<MatchPrediction />
-			<MatchHistory />
+			<MatchesBoard />
 		</div>
 	);
 }

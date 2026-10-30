@@ -1,0 +1,632 @@
+{
+	"schemaVersion": 2,
+	"generatedAt": "2026-10-30T16:47:52.132Z",
+	"title": "Design System: Bolão Celeste",
+	"extensions": {
+		"colorMeta": {
+			"brand-primary": {
+				"role": "primary",
+				"displayName": "Royal Blue",
+				"canonical": "oklch(48.7% 0.247 264.9)",
+				"tonalRamp": [
+					"#050b18",
+					"#0c2059",
+					"#1336a3",
+					"#1d4df0",
+					"#427bff",
+					"#7daaff",
+					"#b5d1ff",
+					"#e4efff"
+				]
+			},
+			"brand-primary-hover": {
+				"role": "primary",
+				"displayName": "Royal Hover",
+				"canonical": "oklch(43.8% 0.222 264.8)",
+				"tonalRamp": [
+					"#060b17",
+					"#0f2254",
+					"#183a99",
+					"#2454e2",
+					"#4a7eff",
+					"#82abff",
+					"#b8d1ff",
+					"#e5efff"
+				]
+			},
+			"brand-primary-active": {
+				"role": "primary",
+				"displayName": "Royal Dark",
+				"canonical": "oklch(37.0% 0.181 264.5)",
+				"tonalRamp": [
+					"#070b15",
+					"#13244c",
+					"#203f8a",
+					"#305ccc",
+					"#5583ed",
+					"#8aadf6",
+					"#bcd1fc",
+					"#e7effe"
+				]
+			},
+			"brand-light": {
+				"role": "primary",
+				"displayName": "Celestial Light",
+				"canonical": "oklch(86.7% 0.056 271.7)",
+				"tonalRamp": [
+					"#0a0b0e",
+					"#222632",
+					"#3d445b",
+					"#5a6487",
+					"#7e88a9",
+					"#a6adc5",
+					"#ccd1de",
+					"#edeef3"
+				]
+			},
+			"brand-navy": {
+				"role": "secondary",
+				"displayName": "Navy Editorial",
+				"canonical": "oklch(20.7% 0.061 262.7)",
+				"tonalRamp": [
+					"#090b0e",
+					"#202733",
+					"#38455d",
+					"#546689",
+					"#778aac",
+					"#a1aec7",
+					"#cad1df",
+					"#eceff4"
+				]
+			},
+			"success": {
+				"role": "tertiary",
+				"displayName": "Success Green",
+				"canonical": "oklch(51.9% 0.103 164.5)",
+				"tonalRamp": [
+					"#060d0a",
+					"#0e2d21",
+					"#10513a",
+					"#117856",
+					"#4a9b7a",
+					"#88bba3",
+					"#bcd9cb",
+					"#e7f1ec"
+				]
+			},
+			"success-soft": {
+				"role": "tertiary",
+				"displayName": "Success Wash",
+				"canonical": "oklch(95.2% 0.017 164.7)",
+				"tonalRamp": [
+					"#0a0b0b",
+					"#232825",
+					"#3f4743",
+					"#5d6963",
+					"#818c87",
+					"#a8b0ac",
+					"#cdd2d0",
+					"#edefee"
+				]
+			},
+			"warning": {
+				"role": "tertiary",
+				"displayName": "Warning Amber",
+				"canonical": "oklch(54.8% 0.127 58.8)",
+				"tonalRamp": [
+					"#100a05",
+					"#3a1f07",
+					"#683600",
+					"#9a5000",
+					"#bd7638",
+					"#d4a27b",
+					"#e8cbb5",
+					"#f7ece4"
+				]
+			},
+			"warning-soft": {
+				"role": "tertiary",
+				"displayName": "Warning Wash",
+				"canonical": "oklch(96.0% 0.023 75.9)",
+				"tonalRamp": [
+					"#0c0b0a",
+					"#292621",
+					"#4a443b",
+					"#6e6558",
+					"#91887b",
+					"#b3ada4",
+					"#d4d0cb",
+					"#efeeec"
+				]
+			},
+			"danger": {
+				"role": "tertiary",
+				"displayName": "Danger Red",
+				"canonical": "oklch(53.1% 0.171 18.4)",
+				"tonalRamp": [
+					"#130808",
+					"#431418",
+					"#791f2a",
+					"#b32b3e",
+					"#d85a63",
+					"#ea9294",
+					"#f6c2c2",
+					"#fde9e9"
+				]
+			},
+			"danger-soft": {
+				"role": "tertiary",
+				"displayName": "Danger Wash",
+				"canonical": "oklch(94.9% 0.020 9.8)",
+				"tonalRamp": [
+					"#0c0b0b",
+					"#2a2525",
+					"#4c4243",
+					"#716263",
+					"#948587",
+					"#b5abac",
+					"#d5cfd0",
+					"#f0eeee"
+				]
+			},
+			"page-bg": {
+				"role": "neutral",
+				"displayName": "Editorial Paper",
+				"canonical": "oklch(96.7% 0.008 91.5)",
+				"tonalRamp": [
+					"#0b0b0b",
+					"#272624",
+					"#464541",
+					"#686661",
+					"#8b8984",
+					"#afaeaa",
+					"#d1d1cf",
+					"#efeeee"
+				]
+			},
+			"surface": {
+				"role": "neutral",
+				"displayName": "Pure White",
+				"canonical": "oklch(100.0% 0.000 89.9)",
+				"tonalRamp": [
+					"#0b0b0b",
+					"#262626",
+					"#454545",
+					"#666666",
+					"#898989",
+					"#aeaeae",
+					"#d1d1d1",
+					"#eeeeee"
+				]
+			},
+			"surface-soft": {
+				"role": "neutral",
+				"displayName": "Ice Blue",
+				"canonical": "oklch(96.9% 0.015 260.7)",
+				"tonalRamp": [
+					"#0b0b0c",
+					"#25262a",
+					"#42454b",
+					"#61666f",
+					"#848992",
+					"#abaeb4",
+					"#cfd1d4",
+					"#eeeef0"
+				]
+			},
+			"surface-hover": {
+				"role": "neutral",
+				"displayName": "Surface Hover",
+				"canonical": "oklch(97.3% 0.009 264.5)",
+				"tonalRamp": [
+					"#0b0b0c",
+					"#252628",
+					"#434548",
+					"#64666b",
+					"#87898e",
+					"#acaeb1",
+					"#d0d1d3",
+					"#eeeeef"
+				]
+			},
+			"surface-sunken": {
+				"role": "neutral",
+				"displayName": "Surface Sunken",
+				"canonical": "oklch(96.0% 0.009 258.3)",
+				"tonalRamp": [
+					"#0b0b0c",
+					"#252628",
+					"#434549",
+					"#63666b",
+					"#86898e",
+					"#acaeb2",
+					"#d0d1d3",
+					"#eeeeef"
+				]
+			},
+			"text-primary": {
+				"role": "neutral",
+				"displayName": "Ink",
+				"canonical": "oklch(21.4% 0.012 270.8)",
+				"tonalRamp": [
+					"#0b0b0c",
+					"#252629",
+					"#43454a",
+					"#63666d",
+					"#868990",
+					"#acaeb3",
+					"#d0d1d4",
+					"#eeeeef"
+				]
+			},
+			"text-muted": {
+				"role": "neutral",
+				"displayName": "Slate",
+				"canonical": "oklch(52.6% 0.024 261.7)",
+				"tonalRamp": [
+					"#0a0b0c",
+					"#24272c",
+					"#40454f",
+					"#5f6674",
+					"#828a97",
+					"#a9aeb8",
+					"#ced1d7",
+					"#edeef0"
+				]
+			},
+			"border": {
+				"role": "neutral",
+				"displayName": "Hairline",
+				"canonical": "oklch(91.8% 0.013 262.4)",
+				"tonalRamp": [
+					"#0b0b0c",
+					"#252629",
+					"#42454a",
+					"#62666e",
+					"#858991",
+					"#abaeb3",
+					"#cfd1d4",
+					"#eeeeef"
+				]
+			},
+			"border-strong": {
+				"role": "neutral",
+				"displayName": "Hairline Strong",
+				"canonical": "oklch(85.8% 0.020 260.2)",
+				"tonalRamp": [
+					"#0b0b0c",
+					"#24272b",
+					"#41454d",
+					"#5f6672",
+					"#838a95",
+					"#a9aeb6",
+					"#ced1d6",
+					"#edeef0"
+				]
+			}
+		},
+		"typographyMeta": {
+			"display": {
+				"displayName": "Display editorial",
+				"purpose": "Somente o título da Início, \"Qual vai ser o placar?\"; clamp(36px, 10.4vw, 46px) no celular."
+			},
+			"headline": {
+				"displayName": "Headline de página",
+				"purpose": "h1 das rotas Jogos, Ranking e Meus palpites; 36px no celular."
+			},
+			"headline-dialog": {
+				"displayName": "Headline de diálogo",
+				"purpose": "Títulos de login/cadastro/perfil; 34px na confirmação de pagamento."
+			},
+			"score": {
+				"displayName": "Número do placar",
+				"purpose": "Placar no seletor; 40px no checkout, 44px no celular, 42px abaixo de 360px."
+			},
+			"figure": {
+				"displayName": "Valor em destaque",
+				"purpose": "Valor do bolão; a mesma família 750 cobre totais, resumo do ranking e valor do PIX."
+			},
+			"title": {
+				"displayName": "Título de seção",
+				"purpose": "h2 de seção e cabeçalho do checkout; 19px no celular."
+			},
+			"title-sm": {
+				"displayName": "Título de cartão",
+				"purpose": "h3 de cartão de pedido."
+			},
+			"body": {
+				"displayName": "Corpo",
+				"purpose": "Texto base do shell; linhas de lista a 15px."
+			},
+			"body-sm": {
+				"displayName": "Corpo pequeno",
+				"purpose": "Metadados, notas de prazo, corpo do checkout."
+			},
+			"label": {
+				"displayName": "Rótulo",
+				"purpose": "Ticker, status de partida, rótulos de indicadores; chips a 12px."
+			},
+			"eyebrow": {
+				"displayName": "Selo editorial",
+				"purpose": "Restrito a \"Bolão Celeste\" (hero da Início) e \"Bolão desta partida\" (painel do bolão), ambos pedidos pelo briefing."
+			}
+		},
+		"shadows": [
+			{
+				"name": "card",
+				"value": "0 8px 30px rgb(8 22 51 / 5%)",
+				"purpose": "Todos os cartões e painéis em repouso (--shadow-card)."
+			},
+			{
+				"name": "raised",
+				"value": "0 18px 48px rgb(8 22 51 / 12%)",
+				"purpose": "Menu da conta, diálogos, lembrete de pedido pendente (--shadow-raised)."
+			},
+			{
+				"name": "drawer",
+				"value": "-18px 0 48px rgb(8 22 51 / 18%)",
+				"purpose": "Painel lateral de checkout."
+			},
+			{
+				"name": "royal-action",
+				"value": "0 6px 16px rgb(23 69 232 / 22%)",
+				"purpose": "CTA primário em repouso; removida no :active e no disabled."
+			},
+			{
+				"name": "club-score",
+				"value": "0 8px 20px rgb(23 69 232 / 24%)",
+				"purpose": "Bloco royal do número do Cruzeiro."
+			},
+			{
+				"name": "selected-match",
+				"value": "inset 0 0 0 1px #1745e8, 0 6px 18px rgb(23 69 232 / 10%)",
+				"purpose": "Card de partida selecionado (borda visual de 2px)."
+			},
+			{
+				"name": "brand-mark",
+				"value": "0 4px 12px rgb(23 69 232 / 22%)",
+				"purpose": "Quadrado royal do logo."
+			},
+			{
+				"name": "mobile-nav",
+				"value": "0 -8px 24px rgb(8 22 51 / 6%)",
+				"purpose": "Barra de navegação inferior."
+			},
+			{
+				"name": "mobile-fab",
+				"value": "0 8px 20px rgb(23 69 232 / 32%)",
+				"purpose": "Botão central de ação da nav mobile."
+			},
+			{
+				"name": "focus-ring",
+				"value": "outline: 3px solid #1745e8; outline-offset: 3px",
+				"purpose": "Foco global em :focus-visible (--focus-ring)."
+			},
+			{
+				"name": "input-focus",
+				"value": "0 0 0 3px rgb(23 69 232 / 18%)",
+				"purpose": "Halo de foco de inputs, com borda royal."
+			}
+		],
+		"motion": [
+			{
+				"name": "duration-standard",
+				"value": "160ms",
+				"purpose": "Hover, seleção, cor/borda/sombra de controles e links."
+			},
+			{
+				"name": "ease-out",
+				"value": "cubic-bezier(0.16, 1, 0.3, 1)",
+				"purpose": "Deslocamentos curtos: seta do CTA (3px), chevrons, rotação do acordeão (--ease-out)."
+			},
+			{
+				"name": "expand-row",
+				"value": "grid-template-rows 280ms ease-out-token; opacity 200ms ease-out; chevron 240ms",
+				"purpose": "Abertura de linhas de resultado e ranking."
+			},
+			{
+				"name": "overlay-enter",
+				"value": "220ms ease-out-token",
+				"purpose": "Drawer de checkout (translateX 24px) e diálogos (translateY 10px + scale 0.98)."
+			},
+			{
+				"name": "ticker-scroll",
+				"value": "60s linear infinite",
+				"purpose": "Faixa de atividade; pausável; desligada sob prefers-reduced-motion."
+			},
+			{
+				"name": "star-in",
+				"value": "560ms ease-out-token, delay index*120ms + 120ms",
+				"purpose": "Cinco estrelas acendendo na confirmação de pagamento."
+			},
+			{
+				"name": "skeleton-sheen",
+				"value": "1.4s ease-in-out infinite",
+				"purpose": "Skeleton de carregamento do placar."
+			},
+			{
+				"name": "reduced-motion",
+				"value": "animation/transition-duration 0.01ms !important",
+				"purpose": "Sob prefers-reduced-motion: ticker estático com um evento e sem botão de pausa."
+			}
+		],
+		"breakpoints": [
+			{
+				"name": "tablet",
+				"value": "max-width: 1023px",
+				"purpose": "Uma coluna, header 64px, gutter 24px, nav desktop some, nav inferior aparece, arte 760px a 0.7."
+			},
+			{
+				"name": "mobile",
+				"value": "max-width: 767px",
+				"purpose": "Header 56px, ticker 38px, gutter 16px, abas de partida roláveis, placar compacto, arte -mobile.webp a 0.22."
+			},
+			{
+				"name": "narrow",
+				"value": "max-width: 359px",
+				"purpose": "Escudos do placar ocultos, placares do checkout empilhados, rodapé empilhado."
+			},
+			{
+				"name": "pix-desktop",
+				"value": "min-width: 768px and (hover: hover) and (pointer: fine)",
+				"purpose": "Mostra QR code; abaixo disso, só copia e cola."
+			},
+			{
+				"name": "wide-art",
+				"value": "min-width: 1920px",
+				"purpose": "Arte de fundo reposicionada para -40px."
+			}
+		]
+	},
+	"components": [
+		{
+			"name": "Botão primário",
+			"kind": "button",
+			"refersTo": "button-primary",
+			"description": "CTA royal único e dominante por tela (Revisar palpite, Ver meu pedido, Continuar, Pagar agora).",
+			"html": "<button class=\"ds-btn-primary\">Revisar palpite <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button>",
+			"css": ".ds-btn-primary { font-family: Inter, ui-sans-serif, system-ui, sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; padding: 12px 20px; border: 1px solid transparent; border-radius: 8px; background: #1745e8; color: #fff; font-size: 17px; font-weight: 600; line-height: 1.3; box-shadow: 0 6px 16px rgb(23 69 232 / 22%); cursor: pointer; transition: background 160ms, box-shadow 160ms; } .ds-btn-primary svg { transition: translate 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primary:hover { background: #123bc9; } .ds-btn-primary:hover svg { translate: 3px 0; } .ds-btn-primary:active { background: #0c2f9d; box-shadow: none; } .ds-btn-primary:focus-visible { outline: 3px solid #1745e8; outline-offset: 3px; } .ds-btn-primary:disabled { background: #c3cad6; color: #4a5260; box-shadow: none; cursor: not-allowed; }"
+		},
+		{
+			"name": "Botão secundário",
+			"kind": "button",
+			"refersTo": "button-secondary",
+			"description": "Ação de apoio em branco com fio forte: Entrar, Tentar novamente, Adicionar outro placar.",
+			"html": "<button class=\"ds-btn-secondary\">Entrar</button>",
+			"css": ".ds-btn-secondary { font-family: Inter, ui-sans-serif, system-ui, sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 12px 20px; border: 1px solid #c9d1de; border-radius: 8px; background: #fff; color: #081633; font-size: 15px; font-weight: 600; cursor: pointer; transition: border-color 160ms, color 160ms; } .ds-btn-secondary:hover { border-color: #1745e8; color: #1745e8; } .ds-btn-secondary:focus-visible { outline: 3px solid #1745e8; outline-offset: 3px; } .ds-btn-secondary:disabled { color: #8b93a1; background: #f3f6fc; cursor: not-allowed; }"
+		},
+		{
+			"name": "Seletor de placar",
+			"kind": "custom",
+			"refersTo": "score-value-club",
+			"description": "Assinatura: número do Cruzeiro como bloco royal sólido ao lado do número neutro do adversário, com − e + simétricos.",
+			"html": "<div class=\"ds-score-board\"><div class=\"ds-score-team\"><span class=\"ds-badge ds-badge-club\">CRU</span><strong>Cruzeiro</strong><div class=\"ds-score-value ds-is-club\">2</div><div class=\"ds-score-steps\"><button class=\"ds-score-adjust\" aria-label=\"Diminuir gols de Cruzeiro\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/></svg></button><button class=\"ds-score-adjust\" aria-label=\"Aumentar gols de Cruzeiro\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></button></div></div><span class=\"ds-score-sep\">×</span><div class=\"ds-score-team\"><span class=\"ds-badge\">ATL</span><strong>Atlético Mineiro</strong><div class=\"ds-score-value\">1</div><div class=\"ds-score-steps\"><button class=\"ds-score-adjust\" aria-label=\"Diminuir gols de Atlético Mineiro\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/></svg></button><button class=\"ds-score-adjust\" aria-label=\"Aumentar gols de Atlético Mineiro\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></button></div></div></div>",
+			"css": ".ds-score-board { font-family: Inter, ui-sans-serif, system-ui, sans-serif; display: grid; grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr); align-items: end; column-gap: 8px; max-width: 560px; } .ds-score-team { display: flex; flex-direction: column; align-items: center; gap: 12px; } .ds-score-team strong { color: #081633; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; } .ds-badge { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; background: #eef2f8; border: 1px solid #c9d1de; color: #081633; font-size: 17px; font-weight: 750; } .ds-badge-club { background: #1745e8; border-color: #1745e8; color: #fff; } .ds-score-value { width: 156px; height: 72px; display: grid; place-items: center; font-size: 56px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; color: #081633; background: #eef2f8; border: 1px solid #c9d1de; border-radius: 8px; } .ds-score-value.ds-is-club { background: #1745e8; border-color: #1745e8; color: #fff; box-shadow: 0 8px 20px rgb(23 69 232 / 24%); } .ds-score-sep { height: 72px; margin-bottom: 56px; display: grid; place-items: center; color: #636b79; font-size: 30px; font-weight: 300; } .ds-score-steps { display: flex; justify-content: space-between; width: 156px; gap: 8px; } .ds-score-adjust { width: 56px; height: 44px; display: grid; place-items: center; border-radius: 8px; background: #fff; border: 1px solid #dfe4ed; color: #081633; cursor: pointer; transition: background 160ms, border-color 160ms, color 160ms; } .ds-score-adjust:hover { border-color: #1745e8; color: #1745e8; background: #eff5ff; } .ds-score-adjust:active { background: #c6d2f9; } .ds-score-adjust:focus-visible { outline: 3px solid #1745e8; outline-offset: 3px; } .ds-score-adjust:disabled { color: #a7aebb; background: #f3f6fc; cursor: not-allowed; }"
+		},
+		{
+			"name": "Card de partida",
+			"kind": "card",
+			"refersTo": "match-card-selected",
+			"description": "Seletor de partidas: card tingido em repouso, branco com borda royal quando selecionado; chip de estado com texto.",
+			"html": "<div class=\"ds-match-chooser\"><button class=\"ds-match\" aria-pressed=\"true\"><strong>Cruzeiro × Atlético Mineiro</strong><span>1 de nov., 02:15 · Brasileirão Série A</span><small class=\"ds-chip ds-chip-pending\">Pedido aguardando pagamento</small><svg class=\"ds-chooser-chevron\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 18 6-6-6-6\"/></svg></button><button class=\"ds-match\" aria-pressed=\"false\"><strong>Cruzeiro × Grêmio</strong><span>5 de nov., 00:15 · Copa do Brasil</span><small class=\"ds-chip ds-chip-confirmed\">Palpite confirmado</small><svg class=\"ds-chooser-chevron\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 18 6-6-6-6\"/></svg></button></div>",
+			"css": ".ds-match-chooser { font-family: Inter, ui-sans-serif, system-ui, sans-serif; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; } .ds-match { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 86px; padding: 12px 40px 12px 16px; text-align: left; background: #f3f6fc; border: 1px solid #dfe4ed; border-radius: 12px; cursor: pointer; transition: border-color 160ms, background 160ms, box-shadow 160ms; font: inherit; } .ds-match:hover { border-color: #c9d1de; background: #fff; } .ds-match[aria-pressed=\"true\"] { background: #fff; border-color: #1745e8; box-shadow: inset 0 0 0 1px #1745e8, 0 6px 18px rgb(23 69 232 / 10%); } .ds-match:focus-visible { outline: 3px solid #1745e8; outline-offset: 3px; } .ds-match strong { font-size: 15px; font-weight: 600; color: #081633; } .ds-match[aria-pressed=\"true\"] strong, .ds-match[aria-pressed=\"true\"] .ds-chooser-chevron { color: #1745e8; } .ds-match span { font-size: 13px; color: #636b79; } .ds-chooser-chevron { position: absolute; right: 14px; top: 50%; translate: 0 -50%; color: #636b79; transition: translate 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-match:hover .ds-chooser-chevron { translate: 2px -50%; } .ds-chip { margin-top: 6px; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; } .ds-chip-pending { background: #fbf0e1; color: #a65b08; } .ds-chip-confirmed { background: #e5f3ec; color: #167b59; }"
+		},
+		{
+			"name": "Badges de status",
+			"kind": "chip",
+			"refersTo": "chip-pending",
+			"description": "Estados de pedido e resultado: sempre texto + tom suave; status de pedido com ponto currentColor.",
+			"html": "<div class=\"ds-badges\"><span class=\"ds-status ds-pending\">Aguardando pagamento</span><span class=\"ds-status ds-confirmed\">Pago</span><span class=\"ds-status ds-cancelled\">Cancelado</span><span class=\"ds-result ds-confirmed\">Placar exato · +10 pts</span><span class=\"ds-result ds-partial\">Acertou o resultado</span><span class=\"ds-result ds-muted\">Não pontuou</span></div>",
+			"css": ".ds-badges { font-family: Inter, ui-sans-serif, system-ui, sans-serif; display: flex; flex-wrap: wrap; gap: 8px; } .ds-status, .ds-result { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; } .ds-status::before { content: \"\"; width: 6px; height: 6px; border-radius: 50%; background: currentColor; } .ds-pending { background: #fbf0e1; color: #a65b08; } .ds-confirmed { background: #e5f3ec; color: #167b59; } .ds-cancelled { background: #fbe9eb; color: #ba3344; } .ds-partial { background: #eff5ff; color: #1745e8; } .ds-muted { background: #eef2f8; color: #636b79; }"
+		},
+		{
+			"name": "Painel do bolão",
+			"kind": "card",
+			"refersTo": "pool-panel",
+			"description": "Painel branco com selo editorial, valor grande em navy, faixa Ice Blue dos 80% (botão que abre \"Como funciona o bolão\") e indicadores em linhas com fio.",
+			"html": "<aside class=\"ds-pool\"><p class=\"ds-pool-title\">Bolão desta partida</p><p class=\"ds-pool-value\">R$ 370,00</p><p class=\"ds-pool-sub\">em bilhetes com pagamento confirmado</p><button type=\"button\" class=\"ds-pool-prize\"><span><strong>80% vai para quem cravar o placar,</strong> dividido entre os bilhetes vencedores.</span><span aria-hidden=\"true\">›</span></button><dl class=\"ds-pool-numbers\"><div><dt>Participantes</dt><dd>11</dd></div><div><dt>Bilhetes confirmados</dt><dd>37</dd></div><div><dt>Placar mais escolhido</dt><dd>2 × 1</dd></div></dl></aside>",
+			"css": ".ds-pool { font-family: Inter, ui-sans-serif, system-ui, sans-serif; max-width: 380px; padding: 32px 30px 26px; background: #fff; border: 1px solid #dfe4ed; border-radius: 18px; box-shadow: 0 18px 50px rgb(8 22 51 / 8%); color: #17191f; } .ds-pool-title { margin: 0; color: #1745e8; font-size: 11px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; } .ds-pool-value { margin: 14px 0 4px; color: #081633; font-size: 48px; font-weight: 750; letter-spacing: -0.035em; line-height: 1.05; font-variant-numeric: tabular-nums; } .ds-pool-sub { margin: 0; color: #636b79; font-size: 15px; } .ds-pool-prize { display: flex; align-items: center; gap: 12px; width: 100%; margin: 22px 0 0; padding: 14px 12px 14px 16px; border-radius: 12px; background: #e8efff; border: 1px solid rgb(198 210 249 / 70%); color: #1745e8; font: inherit; font-size: 14px; line-height: 1.4; text-align: left; cursor: pointer; transition: background 160ms; } .ds-pool-prize:hover { background: #dce7ff; } .ds-pool-prize > span:last-child { margin-left: auto; font-size: 20px; } .ds-pool-prize strong { display: block; font-size: 15px; font-weight: 650; } .ds-pool-numbers { margin: 22px 0 0; } .ds-pool-numbers div { display: flex; justify-content: space-between; padding: 15px 0; border-top: 1px solid #dfe4ed; } .ds-pool-numbers dt { font-size: 15px; } .ds-pool-numbers dd { margin: 0; color: #081633; font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }"
+		},
+		{
+			"name": "Campo de formulário",
+			"kind": "input",
+			"refersTo": "input-field",
+			"description": "Campo do checkout/cadastro: rótulo navy, fio forte, foco com borda royal e halo; erro em vermelho logo abaixo.",
+			"html": "<div class=\"ds-field\"><label for=\"ds-name\">Nome</label><input id=\"ds-name\" placeholder=\"Como quer aparecer no ranking\" /><small>Aparece no ranking e na atividade.</small></div>",
+			"css": ".ds-field { font-family: Inter, ui-sans-serif, system-ui, sans-serif; display: flex; flex-direction: column; gap: 6px; max-width: 360px; } .ds-field label { color: #081633; font-size: 14px; font-weight: 600; } .ds-field input { min-height: 48px; padding: 10px 14px; background: #fff; border: 1px solid #c9d1de; border-radius: 8px; color: #17191f; font: inherit; font-size: 16px; caret-color: #1745e8; transition: border-color 160ms, box-shadow 160ms; } .ds-field input:hover { border-color: #aab4c4; } .ds-field input:focus-visible { outline: none; border-color: #1745e8; box-shadow: 0 0 0 3px rgb(23 69 232 / 18%); } .ds-field input::placeholder { color: #7c8493; } .ds-field input[aria-invalid=\"true\"] { border-color: #ba3344; } .ds-field small { color: #636b79; font-size: 13px; }"
+		},
+		{
+			"name": "Header do cliente",
+			"kind": "nav",
+			"refersTo": "header",
+			"description": "Header branco: ícone da marca (public/brand/icon.svg) e nome em Inter 800 à esquerda, links centrais com sublinhado royal no ativo, conta à direita.",
+			"html": "<header class=\"ds-header\"><a class=\"ds-brand\" href=\"#\"><img class=\"ds-brand-mark\" src=\"/brand/icon.svg\" alt=\"\" width=\"44\" height=\"44\" />Bolão <strong>Celeste</strong></a><nav class=\"ds-nav\"><a href=\"#\" aria-current=\"page\">Início</a><a href=\"#\">Jogos</a><a href=\"#\">Ranking</a><a href=\"#\">Meus palpites</a></nav><span class=\"ds-avatar\">HT</span></header>",
+			"css": ".ds-header { font-family: Inter, ui-sans-serif, system-ui, sans-serif; height: 72px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; padding: 0 40px; background: rgb(255 255 255 / 94%); border-bottom: 1px solid #dfe4ed; } .ds-brand { display: inline-flex; align-items: center; gap: 12px; color: #081633; font-size: 23px; font-weight: 800; letter-spacing: -0.045em; text-decoration: none; } .ds-brand strong { color: #1745e8; font-weight: 800; } .ds-brand-mark { width: 44px; height: 44px; filter: drop-shadow(0 4px 10px rgb(20 69 214 / 22%)); } .ds-nav { display: flex; gap: 36px; height: 100%; font-size: 15px; font-weight: 500; } .ds-nav a { display: flex; align-items: center; height: 100%; padding-top: 2px; color: #17191f; text-decoration: none; border-bottom: 2px solid transparent; transition: color 160ms, border-color 160ms; } .ds-nav a:hover { color: #1745e8; } .ds-nav a[aria-current] { color: #081633; font-weight: 600; border-color: #1745e8; } .ds-nav a:focus-visible { outline: 3px solid #1745e8; outline-offset: 3px; } .ds-avatar { justify-self: end; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #1745e8; color: #fff; font-size: 14px; font-weight: 700; }"
+		},
+		{
+			"name": "Navegação mobile",
+			"kind": "nav",
+			"refersTo": "mobile-nav-action",
+			"description": "Barra inferior fixa (≤1023px): quatro destinos e botão central royal elevado que leva ao placar ou ao pedido.",
+			"html": "<nav class=\"ds-mnav\"><a href=\"#\" aria-current=\"page\">Início</a><a href=\"#\">Jogos</a><button class=\"ds-mnav-action\" aria-label=\"Fazer palpite\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></button><a href=\"#\">Ranking</a><a href=\"#\">Meus palpites</a></nav>",
+			"css": ".ds-mnav { font-family: Inter, ui-sans-serif, system-ui, sans-serif; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) 64px repeat(2, minmax(0, 1fr)); align-items: center; max-width: 390px; padding: 6px 8px; background: rgb(255 255 255 / 96%); border-top: 1px solid #dfe4ed; box-shadow: 0 -8px 24px rgb(8 22 51 / 6%); } .ds-mnav a { display: flex; align-items: center; justify-content: center; min-height: 54px; color: #636b79; font-size: 12px; font-weight: 500; text-decoration: none; text-align: center; } .ds-mnav a[aria-current] { color: #1745e8; font-weight: 650; } .ds-mnav a:focus-visible, .ds-mnav-action:focus-visible { outline: 3px solid #1745e8; outline-offset: 3px; } .ds-mnav-action { width: 56px; height: 56px; margin: 0 auto; display: grid; place-items: center; transform: translateY(-14px); border: 4px solid #fff; border-radius: 50%; background: #1745e8; color: #fff; box-shadow: 0 8px 20px rgb(23 69 232 / 32%); cursor: pointer; }"
+		},
+		{
+			"name": "Título editorial",
+			"kind": "custom",
+			"refersTo": "display",
+			"description": "Hero da Início: selo royal com fio, título em DM Serif Display e subtítulo em Slate.",
+			"html": "<div class=\"ds-intro\"><p class=\"ds-kicker\">Bolão Celeste</p><h1>Qual vai ser o placar?</h1><p class=\"ds-lead\">Escolha o resultado da próxima partida do Cruzeiro.</p></div>",
+			"css": ".ds-intro { font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #f6f4ee; padding: 24px; } .ds-kicker { display: flex; align-items: center; gap: 18px; max-width: 380px; margin: 0 0 14px; color: #1745e8; font-size: 12px; font-weight: 700; letter-spacing: 0.32em; text-transform: uppercase; } .ds-kicker::after { content: \"\"; flex: 1; height: 1px; background: #c9d1de; } .ds-intro h1 { font-family: 'DM Serif Display', Georgia, serif; margin: 0 0 18px; color: #081633; font-weight: 400; font-size: 76px; line-height: 0.92; letter-spacing: -0.02em; text-wrap: balance; } .ds-lead { margin: 0; max-width: 56ch; color: #636b79; font-size: 17px; }"
+		}
+	],
+	"narrative": {
+		"northStar": "O Placar é a Manchete",
+		"overview": "O Bolão Celeste é uma revista esportiva cruzeirense, não um painel escuro. A página é papel editorial claro (`page-bg`), o conteúdo funcional vive em cartões brancos com fio fino e sombra quase imperceptível, os títulos de página falam em serif de revista (DM Serif Display) e todo o resto é Inter, preciso e tabular. O azul royal aparece só onde se clica, onde algo está selecionado ou onde está o número do Cruzeiro. A frase-guia do briefing vale como teste: \"mais revista esportiva do que dashboard; mais produto digital do que página promocional\".\n\nO gesto de assinatura é o placar lido como manchete: o número do Cruzeiro é um bloco royal sólido com algarismo branco grande, ao lado do número do adversário em bloco neutro afundado, separados por um `×` leve. Tudo em volta (abas de partida, resumo, CTA, painel do bolão) existe para que ajustar os gols e seguir para o pedido seja a tarefa mais óbvia da tela.\n\nA atmosfera de estádio entra por dois canais controlados: a arte esportiva de fundo, apenas na Início, atenuada e recortada para que a figura do jogador nunca fique atrás de conteúdo; e as cinco estrelas do Cruzeiro do Sul (`Constellation`), usadas como marca discreta no logo, no painel do bolão, no login e na confirmação de pagamento. Tema somente claro. A densidade é média: respiro editorial no topo, listas com fios finos em vez de pilhas de cartões.",
+		"keyCharacteristics": [
+			"Papel editorial claro, cartões brancos com hairline e sombra mínima.",
+			"Serif DM Serif Display só em títulos de página e de diálogo; Inter para todo o resto, com algarismos tabulares em números.",
+			"Royal `#1745e8` reservado para ação, seleção e o número do Cruzeiro.",
+			"Estados de pedido e partida sempre com texto e marcador, nunca só cor.",
+			"Cinco estrelas do Cruzeiro do Sul como ornamento único e discreto.",
+			"Movimento curto (160ms) e ticker pausável, parado sob `prefers-reduced-motion`."
+		],
+		"rules": [
+			{
+				"name": "The Royal-Means-Act Rule",
+				"body": "O royal marca só ação, seleção ou o número do Cruzeiro. Cartões, painéis e fundos nunca são royal; se uma área inteira ficar azul, ela está errada. (O painel do bolão é Ice Blue, não royal.)",
+				"section": "colors"
+			},
+			{
+				"name": "The Text-With-Tone Rule",
+				"body": "Verde, âmbar e vermelho nunca aparecem sozinhos: todo estado carrega rótulo textual (\"Pedido aguardando pagamento\", \"Palpite confirmado\", \"Pago\", \"Não pontuou\") e, em badges, um ponto `currentColor` de 6–7px.",
+				"section": "colors"
+			},
+			{
+				"name": "The Navy-Ink Rule",
+				"body": "Títulos e números de destaque são navy, nunca preto e nunca royal; o royal em número é exclusivo do Cruzeiro no placar, do ranking dos três primeiros e da sua própria posição.",
+				"section": "colors"
+			},
+			{
+				"name": "The Serif-Is-For-Headlines Rule",
+				"body": "DM Serif Display aparece só em `h1` de página, título de diálogo e na confirmação de pagamento, sempre peso 400. Placar, preço, menu, formulário e estatística são sempre Inter.",
+				"section": "typography"
+			},
+			{
+				"name": "The Tabular Numbers Rule",
+				"body": "Todo número que se compara ou se soma (placar, valor, pontos, posição, bilhetes) usa `font-variant-numeric: tabular-nums`.",
+				"section": "typography"
+			},
+			{
+				"name": "The Player-Never-Behind-Content Rule",
+				"body": "A arte esportiva só existe na rota `/` e é sempre enquadrada por `background-position` para que o jogador fique fora da área de leitura; nenhum texto ou controle se apoia sobre rosto, bandeira ou área contrastada da arte. Outras rotas usam só o papel editorial.",
+				"section": "layout"
+			},
+			{
+				"name": "The Quiet Paper Rule",
+				"body": "Em repouso, nenhum cartão passa da sombra Card. Sombra mais forte é reservada a camadas flutuantes ou à ação royal; se uma tela pesar, a correção é remover borda e decoração, não somar sombra.",
+				"section": "elevation"
+			}
+		],
+		"dos": [
+			"Do manter o fundo de página em papel editorial e o conteúdo funcional em cartões brancos com hairline 1px, raio 18px e a sombra Card (`0 8px 30px rgb(8 22 51 / 5%)`).",
+			"Do usar o royal (`#1745e8`) só para ação, seleção, foco e o número do Cruzeiro; títulos e números grandes em navy.",
+			"Do escrever todo estado de pedido ou partida em texto, com tom suave + texto forte do mesmo estado e ponto `currentColor` nos badges.",
+			"Do usar DM Serif Display 400 apenas em `h1` de página e títulos de diálogo; Inter com `tabular-nums` para placares, valores, pontos e posições.",
+			"Do separar itens de lista com fios de 1px dentro de um único cartão, como em resultados, ranking e atividade.",
+			"Do manter alvos de toque ≥ 44px (botões `−`/`+`, icon buttons, itens de menu) e transições de 160ms em cor e borda.",
+			"Do respeitar `prefers-reduced-motion`: ticker parado mostrando um único evento, sem botão de pausa, e transições/animações reduzidas a 0.01ms.",
+			"Do restringir a arte esportiva à Início, enquadrada para que o jogador nunca fique atrás de texto ou controles, e atenuada no celular (0.22)."
+		],
+		"donts": [
+			"Don't cobrir a aplicação com fundo azul-marinho nem voltar ao padrão \"painel navy com vidro e estrelas\" do incumbente.",
+			"Don't pintar cartões ou painéis inteiros de royal, nem usar gradientes, brilho neon ou efeitos de gaming em componentes.",
+			"Don't empilhar caixas azuladas com bordas fortes e sombras profundas; em repouso nenhum cartão passa da sombra Card.",
+			"Don't identificar estado só por cor nem usar verde/âmbar/vermelho como decoração.",
+			"Don't usar o serif em placares, preços, formulários, menus ou estatísticas.",
+			"Don't espalhar estrelas, partículas ou imagens perto de formulários; a constelação aparece só no logo, no painel do bolão, no login e na confirmação de pagamento.",
+			"Don't criar novos eyebrows em caixa alta: os dois existentes (\"Bolão Celeste\" e \"Bolão desta partida\") são pedidos do briefing e não um padrão para novas telas.",
+			"Don't aplicar a arte de fundo em outras rotas nem posicionar informação crítica sobre o rosto do jogador ou as bandeiras."
+		]
+	}
+}

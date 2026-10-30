@@ -4,7 +4,6 @@ import { useEffect, useId, useRef, useState } from "react";
 import { LogIn, UserRoundPlus, X } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
 import ClientField from "@/components/ClientField";
-import Constellation from "@/components/Constellation";
 import { useModalAccessibility } from "@/hooks/use-modal-accessibility";
 import { formatCpf, formatPhone } from "@/lib/format";
 
@@ -183,7 +182,14 @@ export default function AuthModal({
 
 				{view === "options" ? (
 					<div className="client-dialog-body auth-options">
-						<Constellation className="auth-stars" />
+						{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img
+						className="auth-mark"
+						src="/brand/icon.svg"
+						alt=""
+						width={56}
+						height={56}
+					/>
 						<p className="muted">
 							Entre para acompanhar seus palpites e disputar o ranking da
 							torcida.
