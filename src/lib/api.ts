@@ -4,11 +4,21 @@ const API_ROOT =
 
 export class ApiError extends Error {
 	status: number;
+	/** Set when the API names the failure, e.g. a refusal it fully rolled back. */
+	code?: string;
 
-	constructor(message: string, status: number) {
+	constructor(message: string, status: number, code?: string) {
 		super(message);
 		this.status = status;
+		this.code = code;
 	}
+}
+
+/** Validator errors arrive in English; translate the ones a person can act on. */
+function validationMessage(error?: { rule?: string; field?: string }) {
+	if (error?.rule === "database.unique" && error.field === "email")
+		return "Já existe uma conta com este e-mail. Entre para continuar.";
+	return undefined;
 }
 
 type RequestOptions = RequestInit & {
@@ -62,8 +72,11 @@ export async function apiFetch<T>(
 			data ?? "(sem corpo de resposta)",
 		);
 		throw new ApiError(
-			data?.message ?? "Não foi possível concluir a requisição.",
+			data?.message ??
+				validationMessage(data?.errors?.[0]) ??
+				"Não foi possível concluir a requisição.",
 			response.status,
+			typeof data?.code === "string" ? data.code : undefined,
 		);
 	}
 

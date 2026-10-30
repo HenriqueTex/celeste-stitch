@@ -22,6 +22,7 @@ import type { BetOrderResponse, MatchItem } from "@/lib/types";
 interface Props {
 	uncertain: boolean;
 	onUncertain: () => void;
+	onUncertainResolved: () => void;
 	open: boolean;
 	onClose: () => void;
 	match: MatchItem;
@@ -44,6 +45,7 @@ export default function BetModal({
 	onNewOrder,
 	uncertain,
 	onUncertain,
+	onUncertainResolved,
 }: Props) {
 	const { user, token, logout } = useAuth();
 	const [step, setStep] = useState<"review" | "identity">("review");
@@ -158,6 +160,7 @@ export default function BetModal({
 			} else if (
 				posted &&
 				reason instanceof ApiError &&
+				!reason.code &&
 				(reason.status === 0 || reason.status >= 500)
 			) {
 				onUncertain();
@@ -394,10 +397,21 @@ export default function BetModal({
 								</p>
 							)}
 							{uncertain && !error && (
-								<p className="notice">
-									Há um envio ainda não verificado nesta partida. Confira seus
-									pedidos antes de tentar novamente.
-								</p>
+								<div className="notice uncertain-notice">
+									<p>
+										Não conseguimos confirmar seu último envio.{" "}
+										{user
+											? "Confira Meus palpites antes de tentar de novo."
+											: "Se um PIX chegou no seu e-mail, use esse pagamento em vez de gerar outro."}
+									</p>
+									<button
+										type="button"
+										className="text-link"
+										onClick={onUncertainResolved}
+									>
+										Tentar novamente
+									</button>
+								</div>
 							)}
 						</>
 					)}

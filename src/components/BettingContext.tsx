@@ -200,6 +200,12 @@ export function BettingProvider({ children }: { children: ReactNode }) {
 							[match.id]: true,
 						}))
 					}
+					onUncertainResolved={() =>
+						setUncertainMatches((previous) => ({
+							...previous,
+							[match.id]: false,
+						}))
+					}
 					onNewOrder={(keepLines) => {
 						const previous = visible(orders[match.id]);
 						setOrders((current) => {

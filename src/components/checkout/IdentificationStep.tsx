@@ -1,6 +1,6 @@
 "use client";
 import { useId, useRef, useState } from "react";
-import { ArrowRight, LogIn, UserRound } from "lucide-react";
+import { ArrowRight, LogIn, UserPlus, UserRound } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
 import { formatCpf, formatPhone } from "@/lib/format";
 
@@ -95,6 +95,17 @@ export default function IdentificationStep({
 					</span>
 					<ArrowRight size={18} aria-hidden="true" />
 				</button>
+				<button
+					className="identity-option"
+					onClick={() => switchMode("register")}
+				>
+					<UserPlus size={21} aria-hidden="true" />
+					<span>
+						<strong>Criar uma conta</strong>
+						<small>Leva um minuto. Seus palpites entram no ranking.</small>
+					</span>
+					<ArrowRight size={18} aria-hidden="true" />
+				</button>
 				<button className="identity-option" onClick={() => switchMode("guest")}>
 					<UserRound size={21} aria-hidden="true" />
 					<span>
@@ -103,12 +114,6 @@ export default function IdentificationStep({
 					</span>
 					<ArrowRight size={18} aria-hidden="true" />
 				</button>
-				<p className="muted">
-					Ainda não tem uma conta?{" "}
-					<button className="text-link" onClick={() => switchMode("register")}>
-						Criar conta
-					</button>
-				</p>
 			</div>
 		);
 
@@ -309,7 +314,15 @@ export default function IdentificationStep({
 					{activeMode === "guest" && (
 						<p className="muted">
 							Precisamos destes dados para identificar seu pagamento e um
-							eventual prêmio. Este palpite não entra no ranking.
+							eventual prêmio. Este palpite não entra no ranking.{" "}
+							{/* Same form, so what was typed carries over. */}
+							<button
+								type="button"
+								className="text-link"
+								onClick={() => switchMode("register")}
+							>
+								Criar conta com estes dados
+							</button>
 						</p>
 					)}
 					{activeMode !== "login" && renderField("name")}
