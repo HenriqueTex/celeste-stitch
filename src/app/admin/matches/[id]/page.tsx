@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import TeamCombobox from "@/components/ui/TeamCombobox";
+import MatchSidesField, { fromTeams, toTeams } from "@/components/ui/MatchSidesField";
 import DateTimePicker from "@/components/ui/DateTimePicker";
 import { apiFetch } from "@/lib/api";
 import type { MatchItem, Team } from "@/lib/types";
@@ -33,7 +33,7 @@ export default function EditMatchPage() {
 	const [teams, setTeams] = useState<Team[]>([]);
 	const [saving, setSaving] = useState(false);
 	const [form, setForm] = useState({
-		awayTeam: "",
+		sides: { clubAtHome: true, opponent: "" },
 		competition: "",
 		scheduledAt: "",
 		bettingDeadlineAt: "",
@@ -47,7 +47,7 @@ export default function EditMatchPage() {
 			(data) => {
 				setMatch(data);
 				setForm({
-					awayTeam: data.awayTeam,
+					sides: fromTeams(data.homeTeam, data.awayTeam),
 					competition: data.competition,
 					scheduledAt: toLocalIsoMinutes(data.scheduledAt),
 					bettingDeadlineAt: toLocalIsoMinutes(data.bettingDeadlineAt),
@@ -86,18 +86,11 @@ export default function EditMatchPage() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="grid gap-4">
-					<div>
-						<Label>Mandante</Label>
-						<Input value="Cruzeiro" disabled readOnly />
-					</div>
-					<div className="grid gap-1.5">
-						<Label>Visitante</Label>
-						<TeamCombobox
-							teams={teams.filter((team) => team.name !== "Cruzeiro")}
-							value={form.awayTeam}
-							onChange={(value) => setForm({ ...form, awayTeam: value })}
-						/>
-					</div>
+					<MatchSidesField
+						teams={teams}
+						value={form.sides}
+						onChange={(sides) => setForm({ ...form, sides })}
+					/>
 					<div>
 						<Label>Competição</Label>
 						<Input
@@ -153,7 +146,7 @@ export default function EditMatchPage() {
 									method: "PATCH",
 									token: adminToken,
 									body: JSON.stringify({
-										awayTeam: form.awayTeam,
+										...toTeams(form.sides),
 										competition: form.competition,
 										scheduledAt: form.scheduledAt,
 										bettingDeadlineAt: form.bettingDeadlineAt,

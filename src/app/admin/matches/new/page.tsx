@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import TeamCombobox from "@/components/ui/TeamCombobox";
+import MatchSidesField, { toTeams } from "@/components/ui/MatchSidesField";
 import DateTimePicker from "@/components/ui/DateTimePicker";
 import { apiFetch } from "@/lib/api";
 import type { AppSettings, Team } from "@/lib/types";
@@ -20,8 +20,7 @@ export default function NewMatchPage() {
 	const [settings, setSettings] = useState<AppSettings | null>(null);
 	const [teams, setTeams] = useState<Team[]>([]);
 	const [form, setForm] = useState({
-		homeTeam: "Cruzeiro",
-		awayTeam: "",
+		sides: { clubAtHome: true, opponent: "" },
 		competition: "Brasileirão Série A",
 		scheduledAt: "",
 		bettingDeadlineAt: "",
@@ -68,18 +67,11 @@ export default function NewMatchPage() {
 					<CardTitle>Dados da Partida</CardTitle>
 				</CardHeader>
 				<CardContent className="grid gap-4">
-					<div>
-						<Label>Mandante</Label>
-						<Input value="Cruzeiro" disabled readOnly />
-					</div>
-					<div className="grid gap-1.5">
-						<Label>Visitante</Label>
-						<TeamCombobox
-							teams={teams.filter((team) => team.name !== "Cruzeiro")}
-							value={form.awayTeam}
-							onChange={(value) => setForm({ ...form, awayTeam: value })}
-						/>
-					</div>
+					<MatchSidesField
+						teams={teams}
+						value={form.sides}
+						onChange={(sides) => setForm({ ...form, sides })}
+					/>
 					<div>
 						<Label>Competição</Label>
 						<Input
@@ -131,8 +123,12 @@ export default function NewMatchPage() {
 								method: "POST",
 								token: adminToken,
 								body: JSON.stringify({
-									...form,
+									...toTeams(form.sides),
+									competition: form.competition,
+									scheduledAt: form.scheduledAt,
+									bettingDeadlineAt: form.bettingDeadlineAt,
 									ticketPrice: Number(form.ticketPrice),
+									notes: form.notes,
 								}),
 							});
 							router.push("/admin/matches");
