@@ -11,6 +11,7 @@ import {
 	UserRoundPlus,
 } from "lucide-react";
 import Constellation from "@/components/Constellation";
+import { copyText } from "@/lib/utils";
 import { apiFetch, ApiError } from "@/lib/api";
 import { formatCurrency, formatScore, plural } from "@/lib/format";
 import { useAuth } from "@/components/AuthContext";
@@ -101,7 +102,7 @@ export default function PaymentStep({
 	const copyPix = async () => {
 		if (!pixCode) return;
 		try {
-			await navigator.clipboard.writeText(pixCode);
+			await copyText(pixCode);
 			setCopied(true);
 			setAnnouncement("Código PIX copiado.");
 			setError("");
@@ -153,7 +154,7 @@ export default function PaymentStep({
 				await navigator.share({ text, url: window.location.origin });
 				return;
 			}
-			await navigator.clipboard.writeText(`${text} ${window.location.origin}`);
+			await copyText(`${text} ${window.location.origin}`);
 			setAnnouncement("Palpite copiado para compartilhar.");
 		} catch (reason) {
 			if (reason instanceof DOMException && reason.name === "AbortError")

@@ -10,6 +10,7 @@ import IdentificationStep, {
 } from "@/components/checkout/IdentificationStep";
 import PaymentStep from "@/components/checkout/PaymentStep";
 import type { PredictionLine } from "@/components/BettingContext";
+import { createId } from "@/lib/utils";
 import { apiFetch, ApiError } from "@/lib/api";
 import { formatCurrency, formatMatchDate, isClubTeam } from "@/lib/format";
 import type { BetOrderResponse, MatchItem } from "@/lib/types";
@@ -336,7 +337,7 @@ export default function BetModal({
 											onLinesChange([
 												...lines,
 												{
-													id: crypto.randomUUID(),
+													id: createId(),
 													home: 0,
 													away: 0,
 													tickets: 1,

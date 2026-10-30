@@ -19,6 +19,7 @@ import type {
 import type { Score } from "@/components/ScorePicker";
 import { useAuth } from "@/components/AuthContext";
 import BetModal from "@/components/BetModal";
+import { createId } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import { formatCurrency, plural } from "@/lib/format";
 
@@ -210,7 +211,7 @@ export function BettingProvider({ children }: { children: ReactNode }) {
 							match.id,
 							keepLines && previous
 								? previous.bets.map((bet) => ({
-										id: crypto.randomUUID(),
+										id: createId(),
 										home: bet.homeScorePrediction,
 										away: bet.awayScorePrediction,
 										tickets: bet.tickets,
