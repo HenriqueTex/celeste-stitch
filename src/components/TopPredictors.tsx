@@ -1,7 +1,11 @@
+"use client";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { useAuth } from "@/components/AuthContext";
+import RankingList from "@/components/RankingList";
 import type { LeaderboardRow } from "@/lib/types";
 export default function TopPredictors({ rows }: { rows: LeaderboardRow[] }) {
+	const { user } = useAuth();
 	return (
 		<section className="support-panel" aria-labelledby="ranking-heading">
 			<div className="section-heading">
@@ -12,26 +16,7 @@ export default function TopPredictors({ rows }: { rows: LeaderboardRow[] }) {
 				</Link>
 			</div>
 			{rows.length ? (
-				<ol className="ranking-preview">
-					{rows.slice(0, 3).map((row) => (
-						<li key={row.userId}>
-							<span className="rank-number">
-								{row.rank.toString().padStart(2, "0")}
-							</span>
-							<span className="rank-person">
-								<strong>{row.name}</strong>
-								<small>
-									{row.exactHits}{" "}
-									{row.exactHits === 1 ? "placar exato" : "placares exatos"}
-								</small>
-							</span>
-							<span className="rank-points">
-								{row.points}
-								<small>pontos</small>
-							</span>
-						</li>
-					))}
-				</ol>
+				<RankingList rows={rows.slice(0, 3)} mineId={user?.id} />
 			) : (
 				<p className="empty-inline">
 					O ranking aparece após a apuração das primeiras partidas.

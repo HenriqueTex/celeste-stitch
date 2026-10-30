@@ -24,6 +24,22 @@ export interface MatchStats {
 		awayScore: number;
 		tickets: number;
 	} | null;
+	/** Confirmed tickets that hit the exact score; null until the result exists. */
+	winners?: {
+		tickets: number;
+		participants: number;
+	} | null;
+}
+
+export interface ExactHit {
+	matchId: number;
+	homeTeam: string;
+	awayTeam: string;
+	competition: string;
+	scheduledAt: string;
+	homeScore: number;
+	awayScore: number;
+	points: number;
 }
 
 export interface MatchItem {

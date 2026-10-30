@@ -194,8 +194,7 @@
 	:is(
 		.score-value,
 		.pool-value,
-		.rank-points,
-		.history-score,
+		.row-value,
 		.checkout-total,
 		.prediction-total
 	) {
@@ -825,7 +824,7 @@
 }
 .support-grid {
 	display: grid;
-	grid-template-columns: 1.2fr 1fr;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 40px;
 	padding-top: 8px;
 }
@@ -854,77 +853,177 @@
 	text-decoration: underline;
 	text-underline-offset: 4px;
 }
-.history-list li {
+
+/* Expandable result and ranking rows */
+.expand-list {
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	padding: 17px 0;
+	flex-direction: column;
+}
+.expand-item {
 	border-bottom: 1px solid #202d40;
 }
-.history-list li > div {
+.expand-row {
+	width: 100%;
+	min-height: 72px;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin: 4px 0;
+	padding: 12px;
+	border-radius: 12px;
+	text-align: left;
+	transition:
+		background 240ms cubic-bezier(0.16, 1, 0.3, 1),
+		box-shadow 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.expand-row:hover {
+	background: rgb(37 99 235 / 10%);
+	box-shadow: inset 0 0 0 1px rgb(147 197 253 / 14%);
+}
+.expand-item.is-open .expand-row {
+	background: rgb(37 99 235 / 14%);
+}
+.expand-chevron {
+	flex-shrink: 0;
+	color: #6b7f9c;
+	transition:
+		transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+		color 200ms;
+}
+.expand-row:hover .expand-chevron {
+	color: #bfdbfe;
+	transform: translateY(2px);
+}
+.expand-item.is-open .expand-chevron {
+	color: #93c5fd;
+	transform: rotate(180deg);
+}
+.expand-panel {
+	display: grid;
+	grid-template-rows: 0fr;
+	opacity: 0;
+	transition:
+		grid-template-rows 320ms cubic-bezier(0.16, 1, 0.3, 1),
+		opacity 220ms ease-out;
+}
+.expand-item.is-open .expand-panel {
+	grid-template-rows: 1fr;
+	opacity: 1;
+}
+.expand-panel-inner {
+	min-height: 0;
+	overflow: hidden;
+}
+.expand-content {
+	padding: 4px 12px 18px;
+}
+.expand-content > .muted {
+	font-size: 14px;
+}
+.row-main {
+	flex: 1;
+	min-width: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 3px;
-	min-width: 0;
 }
-.history-list li > div > span {
+.row-main strong {
+	font-size: 14px;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+.row-main small {
 	font-size: 12px;
 	color: #a8b5c7;
 }
-.history-list strong {
-	font-size: 14px;
-	font-weight: 500;
-}
-.history-list strong span {
-	color: #8b9cb5;
-	font-size: 12px;
-	padding: 0 4px;
-}
-.history-score {
+.row-value {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
 	white-space: nowrap;
 	font-size: 18px;
-	font-weight: 600;
+	font-weight: 700;
 }
-.ranking-preview li {
-	display: flex;
-	align-items: center;
-	gap: 15px;
-	padding: 15px 0;
-	border-bottom: 1px solid #202d40;
+.row-value small {
+	font-size: 12px;
+	font-weight: 400;
+	color: #a8b5c7;
 }
 .rank-number {
 	color: #8898af;
 	font-size: 13px;
 	min-width: 18px;
 }
-.ranking-preview li:first-child .rank-number {
+.ranking-list .expand-item:first-child .rank-number {
 	color: #93c5fd;
 }
-.rank-person {
-	display: flex;
-	flex-direction: column;
-	min-width: 0;
-	flex: 1;
+.ranking-list .expand-content {
+	padding-left: 44px;
 }
-.rank-person strong {
+.expand-item.is-mine .expand-row {
+	background: rgb(37 99 235 / 14%);
+}
+.detail-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 10px;
+}
+.detail-grid > div {
+	padding: 12px;
+	border-radius: 10px;
+	background: var(--glass-raised, #1b2940);
+	border: 1px solid var(--glass-line, #29374d);
+}
+.detail-grid dt {
+	font-size: 12px;
+	color: #a8b5c7;
+}
+.detail-grid dd {
+	margin-top: 4px;
+	font-size: 16px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+.detail-grid dd small,
+.hit-list small {
+	display: block;
+	margin-top: 2px;
+	font-size: 12px;
+	font-weight: 400;
+	color: #a8b5c7;
+}
+.detail-title {
+	margin-bottom: 8px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #a8b5c7;
+}
+.hit-list {
+	display: grid;
+	gap: 6px;
+}
+.hit-list li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 12px;
+	border-radius: 10px;
+	background: var(--glass-raised, #1b2940);
+	border: 1px solid var(--glass-line, #29374d);
+}
+.hit-list span {
+	min-width: 0;
 	font-size: 14px;
-	font-weight: 500;
+	font-weight: 600;
 	overflow-wrap: anywhere;
 }
-.rank-person small,
-.rank-points small {
-	color: #a8b5c7;
-	font-size: 12px;
-}
-.rank-points {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	font-weight: 600;
-}
-.rank-points small {
-	font-weight: 400;
+.hit-list strong {
+	font-size: 18px;
+	font-weight: 800;
+	color: #a7f3d0;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
 }
 .activity-section {
 	border-top: 1px solid #29374d;
@@ -1067,33 +1166,6 @@
 }
 .full-ranking {
 	padding-top: 16px;
-}
-.full-ranking-header {
-	display: grid;
-	grid-template-columns: 60px minmax(0, 1fr) 70px;
-	gap: 16px;
-	color: #a8b5c7;
-	font-size: 12px;
-	padding-bottom: 12px;
-	border-bottom: 1px solid #334155;
-}
-.full-ranking-header > span:last-child {
-	text-align: right;
-}
-.full-ranking .ranking-preview li {
-	display: grid;
-	grid-template-columns: 60px minmax(0, 1fr) 70px;
-	gap: 16px;
-}
-.full-ranking .ranking-preview li:last-child {
-	border: 0;
-	padding-bottom: 0;
-}
-.ranking-preview li.is-mine {
-	margin-inline: -12px;
-	padding-inline: 12px;
-	border-radius: 10px;
-	background: rgb(37 99 235 / 14%);
 }
 .you-tag {
 	margin-left: 8px;
@@ -2091,17 +2163,21 @@
 	.full-ranking {
 		padding: 16px;
 	}
-	.full-ranking-header,
-	.full-ranking .ranking-preview li {
-		grid-template-columns: 32px minmax(0, 1fr) 48px;
-		gap: 12px;
+	.expand-row {
+		gap: 10px;
+		padding: 12px 8px;
 	}
-	.full-ranking-header > span:first-child {
-		font-size: 0;
+	.ranking-list .expand-content {
+		padding-left: 8px;
 	}
-	.full-ranking-header > span:first-child::before {
-		content: "Pos.";
-		font-size: 12px;
+	.expand-content {
+		padding-inline: 8px;
+	}
+	.detail-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.detail-grid > div:last-child:nth-child(odd) {
+		grid-column: 1 / -1;
 	}
 	.client-header-inner {
 		padding: 0 16px;

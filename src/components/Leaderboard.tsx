@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthContext";
+import RankingList from "@/components/RankingList";
 import { useResource } from "@/hooks/use-resource";
 import type { LeaderboardRow } from "@/lib/types";
 
@@ -54,44 +55,13 @@ export default function Leaderboard() {
 						className="client-panel full-ranking"
 						aria-label="Classificação dos participantes"
 					>
-						<div className="full-ranking-header">
-							<span>Posição</span>
-							<span>Torcedor</span>
-							<span>Pontos</span>
-						</div>
-						<ol className="ranking-preview">
-							{rows.map((row) => (
-								<li
-									key={row.userId}
-									className={row.userId === mine?.userId ? "is-mine" : undefined}
-									aria-current={row.userId === mine?.userId ? "true" : undefined}
-								>
-									<span className="rank-number">
-										{row.rank.toString().padStart(2, "0")}
-									</span>
-									<span className="rank-person">
-										<strong>
-											{row.name}
-											{row.userId === mine?.userId && (
-												<span className="you-tag">você</span>
-											)}
-										</strong>
-										<small>
-											{row.exactHits}{" "}
-											{row.exactHits === 1 ? "placar exato" : "placares exatos"}
-										</small>
-									</span>
-									<strong className="rank-points">
-										{row.points.toLocaleString("pt-BR")}
-									</strong>
-								</li>
-							))}
-						</ol>
+						<RankingList rows={rows} mineId={mine?.userId} />
 					</section>
 					<p className="small-text muted">
 						Classificação por pontos acumulados nas partidas apuradas. O placar
 						exato vale a pontuação máxima; acertar só o vencedor ou o empate vale
-						pontos parciais. Pedidos feitos sem conta não entram no ranking.
+						pontos parciais. Pedidos feitos sem conta não entram no ranking. Toque
+						em um nome para ver os placares cravados.
 					</p>
 				</>
 			) : (
