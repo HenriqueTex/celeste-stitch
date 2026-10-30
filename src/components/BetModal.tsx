@@ -1,7 +1,11 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Minus, Plus, Trash2, X } from "lucide-react";
-import ScorePicker, { validScore } from "@/components/ScorePicker";
+import ScorePicker, {
+	allowedPick,
+	scoreBounds,
+	validScore,
+} from "@/components/ScorePicker";
 import { useModalAccessibility } from "@/hooks/use-modal-accessibility";
 import { useAuth } from "@/components/AuthContext";
 import IdentificationStep, {
@@ -76,11 +80,14 @@ export default function BetModal({
 		lines.length <= 20 &&
 		lines.every(
 			(line) =>
-				validScore(line.home) &&
-				validScore(line.away) &&
+				allowedPick(match, line.home, line.away) &&
 				line.tickets >= 1 &&
 				line.tickets <= 50,
 		);
+	const clubMatch = isClubTeam(match.homeTeam) || isClubTeam(match.awayTeam);
+	const scoresFilled = lines.every(
+		(line) => validScore(line.home) && validScore(line.away),
+	);
 	const isOpen =
 		match.status === "open" &&
 		new Date(match.bettingDeadlineAt).getTime() > now;
@@ -233,6 +240,7 @@ export default function BetModal({
 									<p className="muted">
 										Cada bilhete repete este placar e custa{" "}
 										{formatCurrency(match.ticketPrice)}.
+										{clubMatch && " Vale vitória do Cruzeiro ou empate."}
 									</p>
 									{lines.map((line, index) => (
 										<div className="prediction-line" key={line.id}>
@@ -259,6 +267,7 @@ export default function BetModal({
 														team={match.homeTeam}
 														club={isClubTeam(match.homeTeam)}
 														value={line.home}
+														{...scoreBounds(match, "home", line.away)}
 														onChange={(home) => updateLine(line.id, { home })}
 													/>
 												</div>
@@ -268,6 +277,7 @@ export default function BetModal({
 														team={match.awayTeam}
 														club={isClubTeam(match.awayTeam)}
 														value={line.away}
+														{...scoreBounds(match, "away", line.home)}
 														onChange={(away) => updateLine(line.id, { away })}
 													/>
 												</div>
@@ -352,7 +362,9 @@ export default function BetModal({
 									</button>
 									{!valid && (
 										<p className="form-error">
-											Preencha os gols dos dois times, de 0 a 20.
+											{scoresFilled
+												? "Só vale vitória do Cruzeiro ou empate."
+												: "Preencha os gols dos dois times, de 0 a 20."}
 										</p>
 									)}
 								</div>

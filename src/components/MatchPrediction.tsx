@@ -2,7 +2,11 @@
 import { Fragment, useEffect, useState } from "react";
 import { ArrowRight, ChevronRight, Clock3, Trophy } from "lucide-react";
 import ActivePool from "@/components/ActivePool";
-import ScorePicker, { validScore } from "@/components/ScorePicker";
+import ScorePicker, {
+	allowedPick,
+	scoreBounds,
+	validScore,
+} from "@/components/ScorePicker";
 import TeamBadge from "@/components/TeamBadge";
 import { useBetting } from "@/components/BettingContext";
 import {
@@ -88,12 +92,13 @@ function MatchChooser({
 						key={item.id}
 						type="button"
 						aria-pressed={item.id === selected.id}
+						title={`${item.homeTeam} × ${item.awayTeam} · ${item.competition}`}
 						onClick={() => onSelect(item.id)}
 					>
 						<strong>
 							{item.homeTeam} × {item.awayTeam}
 						</strong>
-						<span>
+						<span className="chooser-when">
 							{formatMatchDate(item.scheduledAt)}
 							<span className="chooser-competition"> · {item.competition}</span>
 						</span>
@@ -182,9 +187,8 @@ export function MatchWorkspace({
 		? order.bets.reduce((sum, bet) => sum + bet.tickets, 0)
 		: lines.reduce((sum, line) => sum + line.tickets, 0);
 	const scoreCount = order ? order.bets.length : lines.length;
-	const valid = lines.every(
-		(line) => validScore(line.home) && validScore(line.away),
-	);
+	const valid = lines.every((line) => allowedPick(match, line.home, line.away));
+	const clubMatch = isClubTeam(match.homeTeam) || isClubTeam(match.awayTeam);
 	const teams = [
 		{ side: "home" as const, name: match.homeTeam, logo: match.homeTeamLogoUrl },
 		{ side: "away" as const, name: match.awayTeam, logo: match.awayTeamLogoUrl },
@@ -240,6 +244,11 @@ export function MatchWorkspace({
 										team={team.name}
 										club={isClubTeam(team.name)}
 										value={team.side === "home" ? first.home : first.away}
+										{...scoreBounds(
+											match,
+											team.side,
+											team.side === "home" ? first.away : first.home,
+										)}
 										disabled={!isOpen || Boolean(order)}
 										onChange={(score) =>
 											updateLines(
@@ -256,10 +265,16 @@ export function MatchWorkspace({
 							</Fragment>
 						))}
 					</div>
-					{order && (
+					{order ? (
 						<p className="score-instruction">
 							Seu pedido está salvo neste navegador.
 						</p>
+					) : (
+						clubMatch && (
+							<p className="score-instruction">
+								Vale vitória do Cruzeiro ou empate.
+							</p>
+						)
 					)}
 					<div className="prediction-review">
 						<p aria-live="polite">
@@ -273,6 +288,8 @@ export function MatchWorkspace({
 										{match.awayTeam}
 									</strong>
 								</>
+							) : validScore(first.home) && validScore(first.away) ? (
+								"Só vale vitória do Cruzeiro ou empate."
 							) : (
 								"Preencha os gols dos dois times, de 0 a 20."
 							)}
@@ -302,17 +319,10 @@ export function MatchWorkspace({
 						</button>
 					</div>
 				</form>
-				<div className="deadline-note">
-					<Clock3 size={15} aria-hidden="true" />
-					<span>
-						Palpites até {formatMatchDate(match.bettingDeadlineAt)}, horário de
-						Brasília.
-						<small>
-							Cada bilhete custa {formatCurrency(match.ticketPrice)} e vale após
-							a confirmação do pagamento.
-						</small>
-					</span>
-				</div>
+				<p className="deadline-note">
+					Palpites até {formatMatchDate(match.bettingDeadlineAt)}, horário de
+					Brasília.
+				</p>
 				{match.paymentAvailable === false && !order && (
 					<p className="payment-unavailable">
 						Pagamentos indisponíveis no momento. Você pode preparar seu placar.

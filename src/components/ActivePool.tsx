@@ -1,6 +1,4 @@
-"use client";
-import { useRef } from "react";
-import { ChevronRight, Info, Target, Ticket, Trophy, Users } from "lucide-react";
+import { Info, Target, Ticket, Trophy, Users } from "lucide-react";
 import Constellation from "@/components/Constellation";
 import { formatCurrency, formatScore } from "@/lib/format";
 import type { HomeResponse, MatchItem } from "@/lib/types";
@@ -13,14 +11,6 @@ export default function ActivePool({
 }) {
 	const stats = match.stats;
 	const consensus = stats.consensus;
-	const help = useRef<HTMLDetailsElement>(null);
-	const explainPrize = () => {
-		const details = help.current;
-		if (!details) return;
-		details.open = true;
-		details.scrollIntoView({ behavior: "smooth", block: "nearest" });
-		details.querySelector("summary")?.focus({ preventScroll: true });
-	};
 	return (
 		<aside className="pool-summary" aria-labelledby="pool-heading">
 			<Constellation className="pool-stars" />
@@ -30,19 +20,13 @@ export default function ActivePool({
 			<p className="pool-value">{formatCurrency(stats.revenue)}</p>
 			<p className="muted">em bilhetes com pagamento confirmado</p>
 			{distribution && (
-				<button
-					type="button"
-					className="pool-prize"
-					aria-controls="pool-help"
-					onClick={explainPrize}
-				>
+				<p className="pool-prize">
 					<Trophy size={18} aria-hidden="true" />
 					<span>
 						<strong>{distribution.winners}% vai para quem cravar o placar,</strong>{" "}
 						dividido entre os bilhetes vencedores.
 					</span>
-					<ChevronRight className="pool-prize-chevron" size={20} aria-hidden="true" />
-				</button>
+				</p>
 			)}
 			<dl className="pool-numbers">
 				<div>
@@ -69,16 +53,11 @@ export default function ActivePool({
 					</div>
 				)}
 			</dl>
-			<p className="consensus-note">
-				{consensus && stats.tickets > 0
-					? `${consensus.tickets} de ${stats.tickets} bilhetes confirmados (${Math.round((consensus.tickets / stats.tickets) * 100)}%).`
-					: "Ainda sem palpites confirmados."}
-			</p>
-			<details id="pool-help" className="pool-help" ref={help}>
-				<summary>
+			<section className="pool-help" aria-labelledby="pool-help-heading">
+				<h3 id="pool-help-heading">
 					<Info size={16} aria-hidden="true" />
 					Como funciona o bolão
-				</summary>
+				</h3>
 				<div>
 					<p>
 						Cada bilhete registra um placar e participa depois que o pagamento é
@@ -97,7 +76,7 @@ export default function ActivePool({
 						não entram no ranking.
 					</p>
 				</div>
-			</details>
+			</section>
 		</aside>
 	);
 }

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Serif_Display, Inter, Manrope } from "next/font/google";
 import { AuthProvider } from "@/components/AuthContext";
 import LayoutShell from "@/components/LayoutShell";
@@ -28,6 +28,12 @@ export const metadata: Metadata = {
 	title: "Bolão Celeste — Comunidade de Torcedores",
 	description:
 		"Acompanhe os jogos do Cruzeiro, escolha seus placares e participe da comunidade Bolão Celeste.",
+};
+
+// Light-only for now: stops browsers' automatic dark mode from inverting the page.
+export const viewport: Viewport = {
+	colorScheme: "only light",
+	themeColor: "#ffffff",
 };
 
 export default function RootLayout({

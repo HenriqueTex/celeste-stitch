@@ -139,7 +139,7 @@
 /* ── Client: Cruzeiro Editorial ───────────────────────────────── */
 /* Tokens and rules: docs/DESIGN_SYSTEM_BOLAO_CELESTE_EDITORIAL.md */
 .client-shell {
-	color-scheme: light;
+	color-scheme: only light;
 
 	/* Identidade */
 	--brand-primary: #1745e8;
@@ -197,9 +197,12 @@
 	line-height: 1.5;
 	-webkit-font-smoothing: antialiased;
 }
+/* Light-only: "only" also opts the page out of browsers' forced dark mode */
+:root:has(.client-shell) {
+	color-scheme: only light;
+}
 body:has(.client-shell) {
 	background: #f6f4ee;
-	color-scheme: light;
 }
 .client-shell ::selection {
 	background: var(--brand-light);
@@ -620,11 +623,12 @@ body:has(.client-shell) {
 	grid-column: 1;
 	grid-row: 2;
 }
+/* The pick card and the pool share a row: same top, same height */
+/* Rows stay compact; the free space at the bottom is where "Como funciona" opens */
 .home-page .pool-summary {
 	grid-column: 2;
-	grid-row: 1 / span 2;
-	align-self: start;
-	margin-top: 28px;
+	grid-row: 2;
+	align-self: stretch;
 }
 .home-page > .support-grid {
 	margin-top: 32px;
@@ -729,6 +733,13 @@ body:has(.client-shell) {
 	font-weight: 700;
 	letter-spacing: -0.015em;
 	color: var(--brand-navy);
+}
+/* One line each: long names end in "…" instead of wrapping */
+.match-chooser :is(strong, .chooser-when) {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 .match-chooser button[aria-pressed="true"] strong {
 	color: var(--brand-primary);
@@ -1051,9 +1062,10 @@ body:has(.client-shell) {
 .prediction-total strong {
 	grid-column: 2;
 	grid-row: 1 / span 2;
-	align-self: center;
+	align-self: end;
 	font-size: 30px;
 	font-weight: 800;
+	line-height: 1.1;
 	color: var(--brand-navy);
 	letter-spacing: -0.03em;
 }
@@ -1065,7 +1077,7 @@ body:has(.client-shell) {
 	grid-column: 1 / -1;
 	width: 100%;
 	min-height: 58px;
-	margin-top: 16px;
+	margin-top: 10px;
 	border-radius: var(--radius-md);
 	border: 1px solid #3f7bff;
 	background: linear-gradient(180deg, #1a4be0, var(--brand-primary-active));
@@ -1204,28 +1216,10 @@ body:has(.client-shell) {
 }
 
 .deadline-note {
-	display: flex;
-	align-items: center;
-	gap: 14px;
-	margin-top: 18px;
-	font-size: 15px;
-	color: var(--text-primary);
-}
-.deadline-note svg {
-	flex-shrink: 0;
-	width: 40px;
-	height: 40px;
-	padding: 10px;
-	border-radius: 50%;
-	background: var(--surface-soft);
-	color: var(--brand-primary);
-	stroke-width: 2.2;
-}
-.deadline-note small {
-	display: block;
-	margin-top: 2px;
-	font-size: 13px;
+	margin-top: 14px;
 	color: var(--text-muted);
+	font-size: 14px;
+	text-align: center;
 }
 .payment-unavailable {
 	margin-top: 14px;
@@ -1241,7 +1235,7 @@ body:has(.client-shell) {
 .pool-summary {
 	position: relative;
 	overflow: hidden;
-	padding: 32px 30px 26px;
+	padding: 28px 30px 24px;
 	background: var(--surface);
 	border: 1px solid var(--border);
 	border-radius: var(--radius-lg);
@@ -1277,28 +1271,19 @@ body:has(.client-shell) {
 	position: relative;
 	font-size: 15px;
 }
-/* The 80% band: Ice Blue, and it opens "Como funciona o bolão" below */
+/* The 80% band: Ice Blue, informational */
 .pool-prize {
 	display: flex;
 	gap: 12px;
 	align-items: center;
-	width: 100%;
-	margin-top: 22px;
-	padding: 14px 12px 14px 16px;
+	margin-top: 18px;
+	padding: 14px 16px;
 	border-radius: var(--radius-md);
 	background: #e8efff;
 	border: 1px solid rgb(198 210 249 / 70%);
 	font-size: 14px;
 	line-height: 1.4;
-	text-align: left;
 	color: var(--brand-primary);
-	transition:
-		background 160ms,
-		border-color 160ms;
-}
-.pool-prize:hover {
-	background: #dce7ff;
-	border-color: var(--brand-light);
 }
 .pool-prize svg {
 	flex-shrink: 0;
@@ -1307,16 +1292,6 @@ body:has(.client-shell) {
 	color: var(--brand-primary);
 	fill: rgb(23 69 232 / 18%);
 }
-.pool-prize .pool-prize-chevron {
-	width: 20px;
-	height: 20px;
-	margin-left: auto;
-	fill: none;
-	transition: translate 160ms var(--ease-out);
-}
-.pool-prize:hover .pool-prize-chevron {
-	translate: 2px 0;
-}
 .pool-prize strong {
 	display: block;
 	font-size: 15px;
@@ -1324,7 +1299,7 @@ body:has(.client-shell) {
 	letter-spacing: -0.01em;
 }
 .pool-numbers {
-	margin-top: 24px;
+	margin-top: 18px;
 	display: flex;
 	flex-direction: column;
 }
@@ -1333,7 +1308,7 @@ body:has(.client-shell) {
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	padding: 15px 0;
+	padding: 12px 0;
 	border-top: 1px solid var(--border);
 }
 .pool-numbers dt {
@@ -1352,57 +1327,39 @@ body:has(.client-shell) {
 	font-size: 19px;
 	font-weight: 700;
 }
-.consensus-note {
-	padding: 4px 0 20px;
+.pool-numbers > div:last-child {
 	border-bottom: 1px solid var(--border);
-	color: var(--text-muted);
-	font-size: 14px;
 }
 .pool-help {
-	margin-top: 20px;
+	margin-top: 16px;
 	background: var(--surface);
 	border: 1px solid var(--border);
 	border-radius: var(--radius-md);
 	font-size: 14px;
 }
-.pool-help summary {
+/* "Como funciona o bolão": always open, fills the panel's free space on desktop */
+.client-shell .pool-help h3 {
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	min-height: 56px;
-	padding: 0 18px;
+	padding: 14px 18px 10px;
 	color: var(--brand-primary);
 	font-size: 15px;
 	font-weight: 600;
-	cursor: pointer;
-	list-style: none;
-	border-radius: var(--radius-md);
 }
-.pool-help summary svg {
+.pool-help h3 svg {
 	width: 20px;
 	height: 20px;
 	color: var(--brand-navy);
 }
-.pool-help summary::after {
-	content: "+";
-	margin-left: auto;
-	color: var(--brand-navy);
-	font-size: 22px;
-	font-weight: 300;
-	transition: rotate 160ms var(--ease-out);
-}
-.pool-help[open] summary::after {
-	rotate: 45deg;
-}
-.pool-help summary::-webkit-details-marker {
-	display: none;
-}
 .pool-help > div {
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
-	padding: 0 18px 18px;
+	gap: 8px;
+	padding: 0 18px 16px;
 	color: var(--text-primary);
+	font-size: 13px;
+	line-height: 1.5;
 }
 
 /* Support panels */
@@ -3053,7 +3010,9 @@ body:has(.client-shell) {
 		flex-direction: column;
 		gap: 24px;
 	}
-	.home-page .pool-summary {
+	/* Single column: both cards take the full width again */
+	.home-page :is(.prediction-panel, .pool-summary) {
+		align-self: stretch;
 		margin-top: 0;
 	}
 	.match-workspace {
@@ -3268,11 +3227,12 @@ body:has(.client-shell) {
 	.support-panel {
 		padding-bottom: 8px;
 	}
+	/* The scroller clips overflow, so it carries room for the cards' shadow */
 	.match-chooser {
 		display: flex;
 		gap: 10px;
-		margin: 0 -16px 10px;
-		padding: 2px 16px 4px;
+		margin: -4px -16px 10px;
+		padding: 6px 16px 14px;
 		overflow-x: auto;
 		scroll-snap-type: x mandatory;
 		scroll-padding-inline: 16px;
@@ -3330,7 +3290,14 @@ body:has(.client-shell) {
 	}
 	.score-picker {
 		width: min(132px, 100%);
-		gap: 8px;
+		gap: 6px;
+	}
+	.score-board {
+		margin-bottom: 4px;
+	}
+	.score-instruction {
+		font-size: 13px;
+		line-height: 1.3;
 	}
 	.score-value {
 		height: 58px;
@@ -3356,12 +3323,20 @@ body:has(.client-shell) {
 		font-size: 20px;
 	}
 	.prediction-review .client-button-primary {
-		margin-top: 10px;
+		margin-top: 8px;
 		min-height: 52px;
 		font-size: 17px;
 	}
 	.match-chooser {
-		margin-bottom: 8px;
+		margin-bottom: -2px;
+	}
+	.match-chooser button {
+		box-shadow: 0 3px 10px rgb(8 22 51 / 6%);
+	}
+	.match-chooser button[aria-pressed="true"] {
+		box-shadow:
+			inset 0 0 0 1px var(--brand-primary),
+			0 4px 12px rgb(23 69 232 / 14%);
 	}
 	.match-competition svg {
 		width: 16px;
@@ -3392,13 +3367,8 @@ body:has(.client-shell) {
 		font-size: 32px;
 	}
 	.deadline-note {
-		gap: 12px;
-		font-size: 14px;
-	}
-	.deadline-note svg {
-		width: 34px;
-		height: 34px;
-		padding: 8px;
+		margin-top: 12px;
+		font-size: 13px;
 	}
 	.pool-summary {
 		padding: 28px 20px 20px;
