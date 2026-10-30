@@ -1,12 +1,19 @@
 "use client";
-import { useEffect, useState } from "react";
-import { ArrowRight, Clock3, ChevronDown } from "lucide-react";
+import { Fragment, useEffect, useState } from "react";
+import { ArrowRight, Clock3 } from "lucide-react";
 import ActivePool from "@/components/ActivePool";
 import ScorePicker, { validScore } from "@/components/ScorePicker";
 import TeamBadge from "@/components/TeamBadge";
 import { useBetting } from "@/components/BettingContext";
+import { focusScorePicker } from "@/components/MobileNav";
 import { useResource } from "@/hooks/use-resource";
-import { formatCurrency, formatMatchDate } from "@/lib/format";
+import {
+	formatCurrency,
+	formatMatchDate,
+	formatScore,
+	isClubTeam,
+	plural,
+} from "@/lib/format";
 import type { HomeResponse, MatchItem } from "@/lib/types";
 
 export function LoadingMatch() {
@@ -24,12 +31,60 @@ export function LoadingMatch() {
 	);
 }
 
+function MatchChooser({
+	choices,
+	selected,
+	onSelect,
+}: {
+	choices: MatchItem[];
+	selected: MatchItem;
+	onSelect: (id: number) => void;
+}) {
+	const { orderFor, linesFor } = useBetting();
+	return (
+		<div className="match-chooser" role="group" aria-label="Escolha a partida">
+			{choices.map((item) => {
+				const order = orderFor(item.id);
+				const draft = linesFor(item.id)[0];
+				const touched = draft.id !== "first" || draft.home !== 0 || draft.away !== 0;
+				return (
+					<button
+						key={item.id}
+						type="button"
+						aria-pressed={item.id === selected.id}
+						onClick={() => onSelect(item.id)}
+					>
+						<strong>
+							{item.homeTeam} × {item.awayTeam}
+						</strong>
+						<span>
+							{formatMatchDate(item.scheduledAt)}
+							<span className="chooser-competition"> · {item.competition}</span>
+						</span>
+						<small>
+							{order
+								? order.payment.status === "confirmed"
+									? "Palpite confirmado"
+									: "Pedido aguardando pagamento"
+								: touched && validScore(draft.home) && validScore(draft.away)
+									? `Rascunho ${formatScore(Number(draft.home), Number(draft.away))}`
+									: "Sem palpite"}
+						</small>
+					</button>
+				);
+			})}
+		</div>
+	);
+}
+
 export function MatchWorkspace({
 	matches,
 	distribution,
+	alwaysShowChooser = false,
 }: {
 	matches: MatchItem[];
 	distribution?: HomeResponse["poolDistribution"];
+	alwaysShowChooser?: boolean;
 }) {
 	const [selectedId, setSelectedId] = useState<number | null>(() => {
 		const time = Date.now();
@@ -52,6 +107,11 @@ export function MatchWorkspace({
 	useEffect(() => {
 		const interval = setInterval(() => setNow(Date.now()), 1000);
 		return () => clearInterval(interval);
+	}, []);
+	useEffect(() => {
+		if (window.location.hash !== "#palpite") return;
+		const frame = requestAnimationFrame(() => focusScorePicker());
+		return () => cancelAnimationFrame(frame);
 	}, []);
 	const available = matches.filter(
 		(item) => new Date(item.scheduledAt).getTime() > now,
@@ -79,7 +139,13 @@ export function MatchWorkspace({
 			</section>
 		);
 	const lines = linesFor(match.id);
-	const first = lines[0];
+	const order = orderFor(match.id);
+	const first = order?.bets[0]
+		? {
+				home: order.bets[0].homeScorePrediction,
+				away: order.bets[0].awayScorePrediction,
+			}
+		: lines[0];
 	const isOpen =
 		match.status === "open" &&
 		new Date(match.scheduledAt).getTime() > now &&
@@ -87,44 +153,43 @@ export function MatchWorkspace({
 	const choices = available.some((item) => item.id === match.id)
 		? available
 		: [match, ...available];
-	const order = orderFor(match.id);
-	const totalTickets = lines.reduce((sum, line) => sum + line.tickets, 0);
+	const showChooser = alwaysShowChooser || choices.length > 1;
+	const totalTickets = order
+		? order.bets.reduce((sum, bet) => sum + bet.tickets, 0)
+		: lines.reduce((sum, line) => sum + line.tickets, 0);
+	const scoreCount = order ? order.bets.length : lines.length;
 	const valid = lines.every(
 		(line) => validScore(line.home) && validScore(line.away),
 	);
+	const teams = [
+		{ side: "home" as const, name: match.homeTeam, logo: match.homeTeamLogoUrl },
+		{ side: "away" as const, name: match.awayTeam, logo: match.awayTeamLogoUrl },
+	];
 	return (
 		<div className="match-workspace">
-			<section id="palpite" className="prediction-panel" aria-label="Escolha seu placar">
+			<section
+				id="palpite"
+				className="prediction-panel"
+				aria-label="Escolha seu placar"
+			>
+				{showChooser && (
+					<MatchChooser
+						choices={choices}
+						selected={match}
+						onSelect={setSelectedId}
+					/>
+				)}
 				<div className="match-meta">
 					<span>{match.competition}</span>
 					<span className={isOpen ? "status-open" : "status-pending"}>
 						{isOpen ? "Palpites abertos" : "Palpites encerrados"}
 					</span>
 				</div>
-				<div className="match-date-row">
-					<time dateTime={match.scheduledAt}>
+				{!showChooser && (
+					<time className="match-date" dateTime={match.scheduledAt}>
 						{formatMatchDate(match.scheduledAt)}
 					</time>
-					{choices.length > 1 && (
-						<label className="match-switch">
-							<span className="sr-only">Trocar partida</span>
-							<select
-								value={match.id}
-								onChange={(event) => setSelectedId(Number(event.target.value))}
-							>
-								{choices.map((item) => (
-									<option key={item.id} value={item.id}>
-										{item.homeTeam} × {item.awayTeam} ·{" "}
-										{formatMatchDate(item.scheduledAt)}
-									</option>
-								))}
-							</select>
-							<span aria-hidden="true">
-								Trocar partida <ChevronDown size={14} />
-							</span>
-						</label>
-					)}
-				</div>
+				)}
 				<form
 					onSubmit={(event) => {
 						event.preventDefault();
@@ -132,53 +197,43 @@ export function MatchWorkspace({
 					}}
 				>
 					<div className="score-board">
-						<div className="score-team">
-							<div className="team-identity">
-								<TeamBadge name={match.homeTeam} src={match.homeTeamLogoUrl} />
-								<h2>{match.homeTeam}</h2>
-							</div>
-							<ScorePicker
-								team={match.homeTeam}
-								value={first.home}
-								disabled={!isOpen || Boolean(order)}
-								onChange={(home) =>
-									updateLines(
-										match.id,
-										lines.map((line, index) =>
-											index === 0 ? { ...line, home } : line,
-										),
-									)
-								}
-							/>
-						</div>
-						<span className="score-separator" aria-hidden="true">
-							×
-						</span>
-						<div className="score-team">
-							<div className="team-identity">
-								<TeamBadge name={match.awayTeam} src={match.awayTeamLogoUrl} />
-								<h2>{match.awayTeam}</h2>
-							</div>
-							<ScorePicker
-								team={match.awayTeam}
-								value={first.away}
-								disabled={!isOpen || Boolean(order)}
-								onChange={(away) =>
-									updateLines(
-										match.id,
-										lines.map((line, index) =>
-											index === 0 ? { ...line, away } : line,
-										),
-									)
-								}
-							/>
-						</div>
+						{teams.map((team, index) => (
+							<Fragment key={team.side}>
+								{index === 1 && (
+									<span className="score-separator" aria-hidden="true">
+										×
+									</span>
+								)}
+								<div className="score-team">
+									<div className="team-identity">
+										<TeamBadge name={team.name} src={team.logo} />
+										<h2>{team.name}</h2>
+									</div>
+									<ScorePicker
+										team={team.name}
+										club={isClubTeam(team.name)}
+										value={team.side === "home" ? first.home : first.away}
+										disabled={!isOpen || Boolean(order)}
+										onChange={(score) =>
+											updateLines(
+												match.id,
+												lines.map((line, lineIndex) =>
+													lineIndex === 0
+														? { ...line, [team.side]: score }
+														: line,
+												),
+											)
+										}
+									/>
+								</div>
+							</Fragment>
+						))}
 					</div>
-					<p className="score-instruction">
-						{order
-							? "Seu pedido está salvo nesta sessão."
-							: "Ajuste os gols de cada time."}
-					</p>
+					{order && (
+						<p className="score-instruction">
+							Seu pedido está salvo neste navegador.
+						</p>
+					)}
 					<div className="prediction-review">
 						<p aria-live="polite">
 							{order ? (
@@ -187,7 +242,7 @@ export function MatchWorkspace({
 								<>
 									Seu palpite:{" "}
 									<strong>
-										{match.homeTeam} {first.home} × {first.away}{" "}
+										{match.homeTeam} {formatScore(Number(first.home), Number(first.away))}{" "}
 										{match.awayTeam}
 									</strong>
 								</>
@@ -197,8 +252,8 @@ export function MatchWorkspace({
 						</p>
 						<div className="prediction-total">
 							<span>
-								{totalTickets} {totalTickets === 1 ? "bilhete" : "bilhetes"}
-								{lines.length > 1 ? ` · ${lines.length} placares` : ""}
+								{plural(totalTickets, "bilhete", "bilhetes")}
+								{scoreCount > 1 ? ` · ${scoreCount} placares` : ""}
 							</span>
 							<strong>
 								{formatCurrency(
@@ -223,9 +278,11 @@ export function MatchWorkspace({
 				<div className="deadline-note">
 					<Clock3 size={15} aria-hidden="true" />
 					<span>
-						Palpites até {formatMatchDate(match.bettingDeadlineAt)}
+						Palpites até {formatMatchDate(match.bettingDeadlineAt)}, horário de
+						Brasília.
 						<small>
-							Horário de Brasília · Válido após a confirmação do pagamento.
+							Cada bilhete custa {formatCurrency(match.ticketPrice)} e vale após
+							a confirmação do pagamento.
 						</small>
 					</span>
 				</div>
@@ -252,5 +309,5 @@ export default function MatchPrediction() {
 				</button>
 			</div>
 		);
-	return <MatchWorkspace matches={data ?? []} />;
+	return <MatchWorkspace matches={data ?? []} alwaysShowChooser />;
 }

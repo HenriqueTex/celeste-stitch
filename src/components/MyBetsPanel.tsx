@@ -1,42 +1,166 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import MaterialIcon from "@/components/icons/MaterialIcon";
+import Link from "next/link";
+import { ArrowRight, Ticket } from "lucide-react";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/components/AuthContext";
 import { useBetting } from "@/components/BettingContext";
 import { apiFetch } from "@/lib/api";
-import { formatCurrency, formatShortDate } from "@/lib/format";
-import type { BetItem } from "@/lib/types";
+import {
+	formatCurrency,
+	formatMatchDate,
+	formatScore,
+	plural,
+} from "@/lib/format";
+import type { BetItem, BetOrderResponse } from "@/lib/types";
 
-const resultStyles = {
-	exact: {
-		label: "Exato",
-		icon: "check_circle",
-		cls: "text-success bg-success/10 border-success/20",
-	},
-	partial: {
-		label: "Parcial",
-		icon: "remove_circle",
-		cls: "text-accent bg-accent/10 border-accent/20",
-	},
-	miss: {
-		label: "Errou",
-		icon: "cancel",
-		cls: "text-red-400 bg-red-500/10 border-red-500/20",
-	},
+const paymentLabels: Record<string, { label: string; tone: string }> = {
+	pending: { label: "Aguardando pagamento", tone: "is-pending" },
+	confirmed: { label: "Pago", tone: "is-confirmed" },
+	cancelled: { label: "Cancelado", tone: "is-cancelled" },
+};
+const resultLabels = {
+	exact: { label: "Placar exato", tone: "is-confirmed" },
+	partial: { label: "Acertou o resultado", tone: "is-partial" },
+	miss: { label: "Não pontuou", tone: "is-muted" },
 };
 
+function isOpenFor(order: BetOrderResponse) {
+	return (
+		order.match.status === "open" &&
+		new Date(order.match.bettingDeadlineAt).getTime() > Date.now()
+	);
+}
+
+function groupOrders(bets: BetItem[]) {
+	const groups = new Map<string, BetOrderResponse>();
+	for (const bet of bets) {
+		const key = bet.paymentId ? `p${bet.paymentId}` : `b${bet.id}`;
+		const group = groups.get(key);
+		if (group) group.bets.push(bet);
+		else if (bet.payment)
+			groups.set(key, { match: bet.match, payment: bet.payment, bets: [bet] });
+	}
+	return [...groups.values()];
+}
+
+function OrderCard({
+	order,
+	onOpen,
+}: {
+	order: BetOrderResponse;
+	onOpen: (order: BetOrderResponse) => void;
+}) {
+	const status = paymentLabels[order.payment.status] ?? paymentLabels.cancelled;
+	const pending = order.payment.status === "pending";
+	const canPay = pending && isOpenFor(order);
+	return (
+		<li className="order-card" data-tone={status.tone}>
+			<div className="order-card-heading">
+				<div>
+					<h3>
+						{order.match.homeTeam} × {order.match.awayTeam}
+					</h3>
+					<p>
+						{order.match.competition} · {formatMatchDate(order.match.scheduledAt)}
+					</p>
+				</div>
+				<span className={`status-badge ${status.tone}`}>{status.label}</span>
+			</div>
+			<ul className="order-bets">
+				{order.bets.map((bet) => {
+					const result = bet.resultStatus ? resultLabels[bet.resultStatus] : null;
+					return (
+						<li key={bet.id}>
+							<strong className="bet-score">
+								{formatScore(bet.homeScorePrediction, bet.awayScorePrediction)}
+							</strong>
+							<span className="muted">
+								{plural(bet.tickets, "bilhete", "bilhetes")}
+							</span>
+							{result ? (
+								<span className={`result-badge ${result.tone}`}>
+									{result.label}
+									{bet.points > 0 && ` · +${bet.points} pts`}
+								</span>
+							) : (
+								order.payment.status === "confirmed" && (
+									<span className="result-badge is-muted">Aguardando o jogo</span>
+								)
+							)}
+						</li>
+					);
+				})}
+			</ul>
+			<div className="order-card-footer">
+				<span>
+					Pedido #{order.payment.id} ·{" "}
+					<strong>{formatCurrency(order.payment.amount)}</strong>
+				</span>
+				{canPay ? (
+					<button
+						type="button"
+						className="client-button-primary"
+						onClick={() => onOpen(order)}
+					>
+						Pagar agora
+						<ArrowRight size={16} aria-hidden="true" />
+					</button>
+				) : (
+					<button
+						type="button"
+						className="text-link"
+						onClick={() => onOpen(order)}
+					>
+						Ver pedido
+					</button>
+				)}
+			</div>
+		</li>
+	);
+}
+
+function OrderSection({
+	title,
+	orders,
+	onOpen,
+}: {
+	title: string;
+	orders: BetOrderResponse[];
+	onOpen: (order: BetOrderResponse) => void;
+}) {
+	if (!orders.length) return null;
+	return (
+		<section className="order-section" aria-label={title}>
+			<div className="section-heading">
+				<h2>{title}</h2>
+				<span className="muted small-text">
+					{plural(orders.length, "pedido", "pedidos")}
+				</span>
+			</div>
+			<ul className="order-list">
+				{orders.map((order) => (
+					<OrderCard key={order.payment.id} order={order} onOpen={onOpen} />
+				))}
+			</ul>
+		</section>
+	);
+}
+
 export default function MyBetsPanel() {
-	const { isLoggedIn, token } = useAuth();
-	const { openCheckout } = useBetting();
-	const [bets, setBets] = useState<BetItem[]>([]);
+	const { isLoggedIn, isLoading, token } = useAuth();
+	const { openCheckout, savedOrders } = useBetting();
+	const [bets, setBets] = useState<BetItem[] | null>(null);
 	const [error, setError] = useState("");
 	const [authModalOpen, setAuthModalOpen] = useState(false);
+	const guestOrders = savedOrders.filter((order) =>
+		order.bets.every((bet) => !bet.userId),
+	);
+	const open = (order: BetOrderResponse) => openCheckout(order.match, order);
 
 	useEffect(() => {
 		if (!token) return;
-
 		let cancelled = false;
 		const load = () =>
 			void apiFetch<BetItem[]>("/account/bets", { token })
@@ -45,200 +169,151 @@ export default function MyBetsPanel() {
 					setBets(items);
 					setError("");
 				})
-				.catch((err) => {
+				.catch((reason) => {
 					if (cancelled) return;
 					setBets([]);
 					setError(
-						err instanceof Error ? err.message : "Falha ao carregar apostas.",
+						reason instanceof Error
+							? reason.message
+							: "Não foi possível carregar seus palpites.",
 					);
 				});
 		load();
 		window.addEventListener("celeste:payment-confirmed", load);
+		window.addEventListener("celeste:payment-cancelled", load);
 		return () => {
 			cancelled = true;
 			window.removeEventListener("celeste:payment-confirmed", load);
+			window.removeEventListener("celeste:payment-cancelled", load);
 		};
 	}, [token]);
 
-	const stats = useMemo(() => {
-		const totalPoints = bets.reduce((sum, item) => sum + item.points, 0);
-		const exactCount = bets.filter(
-			(item) => item.resultStatus === "exact",
-		).length;
-		const settled = bets.filter((item) => item.resultStatus).length;
-		const accuracy =
-			settled === 0 ? 0 : Math.round((exactCount / settled) * 100);
-		return { totalPoints, exactCount, accuracy };
+	const { toPay, upcoming, settled, cancelledOrders, stats } = useMemo(() => {
+		const orders = groupOrders(bets ?? []);
+		const settledOrders = orders.filter((order) =>
+			order.bets.some((bet) => bet.resultStatus),
+		);
+		return {
+			toPay: orders.filter((order) => order.payment.status === "pending"),
+			upcoming: orders.filter(
+				(order) =>
+					order.payment.status === "confirmed" &&
+					!settledOrders.includes(order),
+			),
+			settled: settledOrders,
+			cancelledOrders: orders.filter(
+				(order) =>
+					order.payment.status !== "pending" &&
+					order.payment.status !== "confirmed" &&
+					!settledOrders.includes(order),
+			),
+			stats: {
+				points: (bets ?? []).reduce((sum, bet) => sum + bet.points, 0),
+				exact: (bets ?? []).filter((bet) => bet.resultStatus === "exact")
+					.length,
+				settled: (bets ?? []).filter((bet) => bet.resultStatus).length,
+			},
+		};
 	}, [bets]);
+
+	const intro = (
+		<div className="page-intro">
+			<h1>Meus palpites</h1>
+			<p>Acompanhe pagamentos, resultados e os pontos de cada placar.</p>
+		</div>
+	);
 
 	if (!isLoggedIn) {
 		return (
-			<>
-				<section className="glass-panel mx-auto max-w-2xl rounded-2xl p-8 text-center">
-					<MaterialIcon name="wallet" className="text-4xl text-accent" />
-					<h1 className="mt-3 text-2xl font-black uppercase italic">
-						Meus Palpites
-					</h1>
-					<p className="mt-2 text-sm text-slate-300">
-						Entre para acompanhar seus palpites, pagamentos e premiações.
-					</p>
-					<button
-						onClick={() => setAuthModalOpen(true)}
-						className="mt-5 rounded-xl bg-primary px-6 py-3 font-bold text-white hover:bg-blue-600 focus-visible:outline-2 focus-visible:outline-white transition-colors"
-					>
-						Entrar na minha conta
-					</button>
-				</section>
+			<div className="home-dashboard narrow-page">
+				{intro}
+				{isLoading ? (
+					<div className="client-panel" role="status">
+						Carregando…
+					</div>
+				) : (
+					<section className="client-panel empty-panel">
+						<Ticket size={28} aria-hidden="true" />
+						<h2>Entre para ver seu histórico</h2>
+						<p>
+							Com sua conta você acompanha pagamentos, resultados e sua posição
+							no ranking.
+						</p>
+						<button
+							type="button"
+							className="client-button-primary"
+							onClick={() => setAuthModalOpen(true)}
+						>
+							Entrar na minha conta
+						</button>
+					</section>
+				)}
+				<OrderSection
+					title="Pedidos sem conta neste navegador"
+					orders={guestOrders}
+					onOpen={open}
+				/>
 				<AuthModal
 					open={authModalOpen}
 					initialView="login"
 					onClose={() => setAuthModalOpen(false)}
 				/>
-			</>
+			</div>
 		);
 	}
 
 	return (
-		<div className="max-w-4xl mx-auto flex flex-col gap-6">
-			<div className="flex items-center gap-2">
-				<MaterialIcon name="wallet" className="text-accent font-black" />
-				<h1 className="font-black uppercase italic tracking-tight text-lg">
-					Meus Palpites
-				</h1>
-			</div>
-
-			<div className="grid grid-cols-3 gap-3 sm:gap-4">
-				<div className="glass-panel rounded-xl p-4 text-center">
-					<p className="text-xl sm:text-2xl font-black italic text-primary">
-						{stats.totalPoints}
-					</p>
-					<p className="text-xs font-bold uppercase text-slate-300 tracking-wide">
-						Total de Pontos
-					</p>
+		<div className="home-dashboard narrow-page">
+			{intro}
+			<dl className="ranking-summary">
+				<div>
+					<dt>Pontos</dt>
+					<dd>{stats.points.toLocaleString("pt-BR")}</dd>
 				</div>
-				<div className="glass-panel rounded-xl p-4 text-center">
-					<p className="text-xl sm:text-2xl font-black italic text-success">
-						{stats.exactCount}
-					</p>
-					<p className="text-xs font-bold uppercase text-slate-300 tracking-wide">
-						Placares Exatos
-					</p>
+				<div>
+					<dt>Placares exatos</dt>
+					<dd>{stats.exact}</dd>
 				</div>
-				<div className="glass-panel rounded-xl p-4 text-center">
-					<p className="text-xl sm:text-2xl font-black italic text-accent">
-						{stats.accuracy}%
-					</p>
-					<p className="text-xs font-bold uppercase text-slate-300 tracking-wide">
-						Acurácia
-					</p>
+				<div>
+					<dt>Palpites apurados</dt>
+					<dd>{stats.settled}</dd>
 				</div>
-			</div>
-
-			{error && <div className="text-sm text-red-400">{error}</div>}
-
-			<div className="glass-panel rounded-2xl overflow-hidden">
-				<div className="hidden sm:grid grid-cols-[1fr_90px_120px_110px_90px] items-center px-6 py-3 border-b border-white/5 text-xs font-bold uppercase text-slate-300 tracking-wider">
-					<span>Jogo</span>
-					<span className="text-center">Palpite</span>
-					<span className="text-center">Pagamento</span>
-					<span className="text-center">Resultado</span>
-					<span className="text-right">Pontos</span>
+			</dl>
+			{error && (
+				<p className="form-error" role="alert">
+					{error}
+				</p>
+			)}
+			{bets === null ? (
+				<div className="client-panel" role="status">
+					Carregando seus palpites…
 				</div>
-
-				{bets.length === 0 && (
-					<div className="px-6 py-8 text-sm text-slate-400">
-						Você ainda não registrou palpites.
-					</div>
-				)}
-
-				{bets.map((bet) => {
-					const style = bet.resultStatus
-						? resultStyles[bet.resultStatus]
-						: null;
-					return (
-						<div
-							key={bet.id}
-							className="group flex flex-col gap-3 sm:grid sm:grid-cols-[1fr_90px_120px_110px_90px] sm:items-center px-4 sm:px-6 py-4 border-b border-white/[0.03] hover:bg-white/5 transition-colors"
-						>
-							<div className="min-w-0">
-								<p className="font-bold text-sm">
-									{bet.match.homeTeam} vs {bet.match.awayTeam}
-								</p>
-								<p className="text-xs text-slate-300">
-									{formatShortDate(bet.match.scheduledAt)} · {bet.tickets}{" "}
-									bilhete(s)
-								</p>
-							</div>
-
-							<div className="grid grid-cols-2 gap-3 sm:contents">
-								<div className="text-sm font-black italic sm:text-center">
-									<span className="block sm:hidden text-xs not-italic font-medium text-slate-300">
-										Palpite
-									</span>
-									{bet.homeScorePrediction} - {bet.awayScorePrediction}
-								</div>
-
-								<div className="sm:text-center">
-									<span className="block sm:hidden text-xs text-slate-300">
-										Pagamento
-									</span>
-									<p className="text-xs font-bold uppercase text-blue-300">
-										{bet.payment?.status === "confirmed"
-											? "Confirmado"
-											: bet.payment?.status === "cancelled"
-												? "Cancelado"
-												: "Pendente"}
-									</p>
-									<p className="text-xs text-slate-300">
-										{formatCurrency(bet.totalAmount)}
-									</p>
-									{bet.payment && (
-										<button
-											className="text-link"
-											onClick={() =>
-												openCheckout(bet.match, {
-													match: bet.match,
-													payment: bet.payment!,
-													bets: bets.filter(
-														(item) => item.paymentId === bet.paymentId,
-													),
-												})
-											}
-										>
-											Ver pedido
-										</button>
-									)}
-								</div>
-
-								<div className="flex flex-col items-start sm:items-center sm:justify-center">
-									<span className="block sm:hidden text-xs text-slate-300">
-										Resultado
-									</span>
-									{style ? (
-										<span
-											className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold border ${style.cls}`}
-										>
-											<MaterialIcon name={style.icon} className="text-xs" />
-											{style.label}
-										</span>
-									) : (
-										<span className="text-xs font-bold text-slate-300 uppercase">
-											Em aberto
-										</span>
-									)}
-								</div>
-
-								<div className="text-xs font-black italic sm:text-right">
-									<span className="block sm:hidden text-xs not-italic font-medium text-slate-300">
-										Pontos
-									</span>
-									{bet.points > 0 ? `+${bet.points}` : bet.points}
-								</div>
-							</div>
-						</div>
-					);
-				})}
-			</div>
+			) : bets.length === 0 && !error ? (
+				<section className="client-panel empty-panel">
+					<Ticket size={28} aria-hidden="true" />
+					<h2>Nenhum palpite ainda</h2>
+					<p>Escolha o placar do próximo jogo do Cruzeiro para começar.</p>
+					<Link href="/#palpite" className="client-button-primary">
+						Fazer meu palpite
+					</Link>
+				</section>
+			) : (
+				<>
+					<OrderSection title="Para pagar" orders={toPay} onOpen={open} />
+					<OrderSection title="Próximos jogos" orders={upcoming} onOpen={open} />
+					<OrderSection title="Resultados" orders={settled} onOpen={open} />
+					<OrderSection
+						title="Cancelados"
+						orders={cancelledOrders}
+						onOpen={open}
+					/>
+				</>
+			)}
+			<OrderSection
+				title="Pedidos sem conta neste navegador"
+				orders={guestOrders}
+				onOpen={open}
+			/>
 		</div>
 	);
 }

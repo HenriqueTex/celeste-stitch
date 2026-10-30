@@ -2,6 +2,7 @@
 import { useId, useRef, useState } from "react";
 import { ArrowRight, LogIn, UserRound } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
+import { formatCpf, formatPhone } from "@/lib/format";
 
 export type IdentityMode =
 	| "choice"
@@ -21,11 +22,25 @@ const labels: Record<FieldName, string> = {
 	name: "Nome completo",
 	email: "E-mail",
 	cpf: "CPF",
-	phone: "Telefone",
+	phone: "Celular com DDD",
 	pixKey: "Chave PIX para receber prêmios",
 	password: "Senha",
 	confirmation: "Confirme a senha",
 };
+const hints: Partial<Record<FieldName, string>> = {
+	cpf: "Identifica quem fez o pagamento.",
+	pixKey: "Usada para enviar um eventual prêmio.",
+	password: "Pelo menos 8 caracteres.",
+};
+type FieldError = { name: FieldName; message: string } | null;
+class FieldValidationError extends Error {
+	constructor(
+		readonly field: FieldName,
+		message: string,
+	) {
+		super(message);
+	}
+}
 
 export default function IdentificationStep({
 	mode,
@@ -42,6 +57,7 @@ export default function IdentificationStep({
 }) {
 	const { user, login, register, updateProfile } = useAuth();
 	const [fields, setFields] = useState<Partial<Record<FieldName, string>>>({});
+	const [fieldError, setFieldError] = useState<FieldError>(null);
 	const lock = useRef(false);
 	const prefix = useId();
 	const value = (name: FieldName) =>
@@ -61,6 +77,7 @@ export default function IdentificationStep({
 	const activeMode = user ? "account" : mode === "account" ? "choice" : mode;
 	const switchMode = (next: IdentityMode) => {
 		onError("");
+		setFieldError(null);
 		onModeChange(next);
 	};
 	if (activeMode === "choice")
@@ -98,6 +115,9 @@ export default function IdentificationStep({
 	const renderField = (name: FieldName) => {
 		const id = prefix + name;
 		const password = name === "password" || name === "confirmation";
+		const invalid = fieldError?.name === name;
+		const hint =
+			name === "password" && activeMode === "login" ? undefined : hints[name];
 		return (
 			<div className="checkout-field" key={name}>
 				<label htmlFor={id}>{labels[name]}</label>
@@ -106,6 +126,10 @@ export default function IdentificationStep({
 					name={name}
 					value={value(name)}
 					required
+					aria-invalid={invalid || undefined}
+					aria-describedby={
+						invalid ? `${id}-error` : hint ? `${id}-hint` : undefined
+					}
 					type={
 						password
 							? "password"
@@ -153,15 +177,26 @@ export default function IdentificationStep({
 										? 120
 										: 140
 					}
-					onChange={(event) =>
+					onChange={(event) => {
+						const raw = event.target.value;
+						if (invalid) setFieldError(null);
 						setFields((previous) => ({
 							...previous,
-							[name]: event.target.value,
-						}))
-					}
+							[name]:
+								name === "cpf"
+									? formatCpf(raw)
+									: name === "phone"
+										? formatPhone(raw)
+										: raw,
+						}));
+					}}
 				/>
-				{name === "pixKey" && (
-					<small>Usada para o recebimento de um eventual prêmio.</small>
+				{invalid ? (
+					<small id={`${id}-error`} className="field-error">
+						{fieldError.message}
+					</small>
+				) : (
+					hint && <small id={`${id}-hint`}>{hint}</small>
 				)}
 			</div>
 		);
@@ -176,20 +211,29 @@ export default function IdentificationStep({
 				lock.current = true;
 				onBusy(true);
 				onError("");
+				setFieldError(null);
 				try {
 					if (activeMode === "login") {
 						await login(value("email"), value("password"));
 						onModeChange("account");
 						return;
 					}
-					if (
-						value("cpf").replace(/\D/g, "").length !== 11 ||
-						value("phone").replace(/\D/g, "").length < 10
-					)
-						throw new Error("Confira o CPF (11 dígitos) e o telefone com DDD.");
+					if (value("cpf").replace(/\D/g, "").length !== 11)
+						throw new FieldValidationError(
+							"cpf",
+							"Informe os 11 dígitos do CPF.",
+						);
+					if (value("phone").replace(/\D/g, "").length < 10)
+						throw new FieldValidationError(
+							"phone",
+							"Informe o celular com DDD, por exemplo (31) 99999-9999.",
+						);
 					if (activeMode === "register") {
 						if (value("password") !== value("confirmation"))
-							throw new Error("As senhas precisam ser iguais.");
+							throw new FieldValidationError(
+								"confirmation",
+								"As senhas precisam ser iguais.",
+							);
 						await register({
 							name: value("name"),
 							email: value("email"),
@@ -218,11 +262,15 @@ export default function IdentificationStep({
 							pixKey: value("pixKey"),
 						});
 				} catch (reason) {
-					onError(
-						reason instanceof Error
-							? reason.message
-							: "Não foi possível continuar.",
-					);
+					if (reason instanceof FieldValidationError) {
+						setFieldError({ name: reason.field, message: reason.message });
+						document.getElementById(prefix + reason.field)?.focus();
+					} else
+						onError(
+							reason instanceof Error
+								? reason.message
+								: "Não foi possível continuar.",
+						);
 				} finally {
 					lock.current = false;
 					onBusy(false);

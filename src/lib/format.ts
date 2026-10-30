@@ -38,9 +38,38 @@ export function formatRelativeTime(value: string) {
 	const diff = Date.now() - new Date(value).getTime();
 	const minutes = Math.max(1, Math.round(diff / 60000));
 
-	if (minutes < 60) return `${minutes}m atrás`;
+	if (minutes < 60) return `há ${minutes} min`;
 	const hours = Math.round(minutes / 60);
-	if (hours < 24) return `${hours}h atrás`;
+	if (hours < 24) return `há ${hours} h`;
 	const days = Math.round(hours / 24);
-	return `${days}d atrás`;
+	return days === 1 ? "há 1 dia" : `há ${days} dias`;
+}
+
+export function formatScore(home: number, away: number) {
+	return `${home} × ${away}`;
+}
+
+export function plural(count: number, one: string, many: string) {
+	return `${count} ${count === 1 ? one : many}`;
+}
+
+export function formatCpf(value: string) {
+	return value
+		.replace(/\D/g, "")
+		.slice(0, 11)
+		.replace(/(\d{3})(\d)/, "$1.$2")
+		.replace(/(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+		.replace(/\.(\d{3})(\d)/, ".$1-$2");
+}
+
+export function formatPhone(value: string) {
+	return value
+		.replace(/\D/g, "")
+		.slice(0, 11)
+		.replace(/^(\d{2})(\d)/, "($1) $2")
+		.replace(/(\d{5})(\d)/, "$1-$2");
+}
+
+export function isClubTeam(name: string) {
+	return /cruzeiro/i.test(name);
 }

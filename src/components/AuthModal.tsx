@@ -1,351 +1,305 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
-import { ArrowLeft, LogIn, Network, UserRoundPlus, X } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { LogIn, UserRoundPlus, X } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
+import ClientField from "@/components/ClientField";
+import Constellation from "@/components/Constellation";
 import { useModalAccessibility } from "@/hooks/use-modal-accessibility";
+import { formatCpf, formatPhone } from "@/lib/format";
 
 type ModalView = "options" | "login" | "register";
+type FieldName =
+	| "name"
+	| "email"
+	| "password"
+	| "confirmation"
+	| "cpf"
+	| "phone"
+	| "pixKey";
+type Values = Record<FieldName, string>;
+const emptyValues: Values = {
+	name: "",
+	email: "",
+	password: "",
+	confirmation: "",
+	cpf: "",
+	phone: "",
+	pixKey: "",
+};
+
+function validate(view: ModalView, values: Values) {
+	const errors: Partial<Record<FieldName, string>> = {};
+	if (!values.email.includes("@"))
+		errors.email = "Informe um e-mail válido, como nome@email.com.";
+	if (!values.password) errors.password = "Informe sua senha.";
+	if (view === "login") return errors;
+	if (values.name.trim().length < 2) errors.name = "Informe seu nome.";
+	if (values.password.length < 8)
+		errors.password = "A senha precisa ter pelo menos 8 caracteres.";
+	if (values.confirmation !== values.password)
+		errors.confirmation = "As senhas precisam ser iguais.";
+	if (values.cpf.replace(/\D/g, "").length !== 11)
+		errors.cpf = "Informe os 11 dígitos do CPF.";
+	if (values.phone.replace(/\D/g, "").length < 10)
+		errors.phone = "Informe o celular com DDD, por exemplo (31) 99999-9999.";
+	if (values.pixKey.trim().length < 3)
+		errors.pixKey = "Informe uma chave PIX: CPF, e-mail, celular ou aleatória.";
+	return errors;
+}
 
 export default function AuthModal({
 	open,
 	initialView = "options",
+	initialValues,
 	onClose,
 }: {
 	open: boolean;
 	initialView?: ModalView;
+	initialValues?: Partial<Values>;
 	onClose: () => void;
 }) {
 	const { login, register } = useAuth();
 	const [view, setView] = useState<ModalView>(initialView);
-	const [name, setName] = useState("");
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
-	const [cpf, setCpf] = useState("");
-	const [phone, setPhone] = useState("");
-	const [pixKey, setPixKey] = useState("");
+	const [values, setValues] = useState<Values>(emptyValues);
+	const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
-
-	const fmtCpf = (v: string) =>
-		v
-			.replace(/\D/g, "")
-			.slice(0, 11)
-			.replace(/(\d{3})(\d)/, "$1.$2")
-			.replace(/(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
-			.replace(/\.(\d{3})(\d)/, ".$1-$2");
-
-	const fmtPhone = (v: string) =>
-		v
-			.replace(/\D/g, "")
-			.slice(0, 11)
-			.replace(/^(\d{2})(\d)/, "($1) $2")
-			.replace(/(\d{5})(\d)/, "$1-$2");
+	const formRef = useRef<HTMLFormElement>(null);
 
 	useEffect(() => {
-		if (open) {
-			setView(initialView);
-		}
-	}, [open, initialView]);
-
-	const resetAndClose = () => {
-		setView("options");
-		setName("");
-		setEmail("");
-		setPassword("");
-		setConfirmPassword("");
-		setCpf("");
-		setPhone("");
-		setPixKey("");
+		if (!open) return;
+		setView(initialView);
+		setValues({
+			...emptyValues,
+			...initialValues,
+			cpf: formatCpf(initialValues?.cpf ?? ""),
+			phone: formatPhone(initialValues?.phone ?? ""),
+		});
+		setErrors({});
 		setError("");
-		setLoading(false);
+	}, [open, initialView, initialValues]);
+
+	const close = () => {
+		if (loading) return;
 		onClose();
 	};
 	const titleId = useId();
-	const dialogRef = useModalAccessibility(open, resetAndClose);
+	const dialogRef = useModalAccessibility(open, close);
 
 	if (!open) return null;
 
-	const handleLogin = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const switchView = (next: ModalView) => {
+		setView(next);
+		setErrors({});
 		setError("");
-		if (!email || !password) {
-			setError("Preencha todos os campos.");
-			return;
-		}
-
-		try {
-			setLoading(true);
-			await login(email, password);
-			resetAndClose();
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Não foi possível entrar.");
-		} finally {
-			setLoading(false);
-		}
 	};
+	const field = (name: FieldName) => ({
+		value: values[name],
+		error: errors[name],
+		onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+			const raw = event.target.value;
+			setValues((previous) => ({
+				...previous,
+				[name]:
+					name === "cpf"
+						? formatCpf(raw)
+						: name === "phone"
+							? formatPhone(raw)
+							: raw,
+			}));
+			if (errors[name])
+				setErrors((previous) => ({ ...previous, [name]: undefined }));
+		},
+	});
 
-	const handleRegister = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const submit = async (event: React.FormEvent) => {
+		event.preventDefault();
 		setError("");
-		if (
-			!name ||
-			!email ||
-			!password ||
-			!confirmPassword ||
-			!cpf ||
-			!phone ||
-			!pixKey
-		) {
-			setError("Preencha todos os campos.");
+		const found = validate(view, values);
+		setErrors(found);
+		if (Object.keys(found).length) {
+			requestAnimationFrame(() =>
+				formRef.current
+					?.querySelector<HTMLInputElement>("[aria-invalid='true']")
+					?.focus(),
+			);
 			return;
 		}
-		if (password !== confirmPassword) {
-			setError("As senhas não conferem.");
-			return;
-		}
-		if (password.length < 8) {
-			setError("A senha deve ter pelo menos 8 caracteres.");
-			return;
-		}
-		if (cpf.replace(/\D/g, "").length < 11) {
-			setError("CPF inválido.");
-			return;
-		}
-		if (phone.replace(/\D/g, "").length < 10) {
-			setError("Telefone inválido.");
-			return;
-		}
-
 		try {
 			setLoading(true);
-			await register({ name, email, password, cpf, phone, pixKey });
-			resetAndClose();
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Não foi possível criar a conta.");
+			if (view === "login") await login(values.email, values.password);
+			else
+				await register({
+					name: values.name,
+					email: values.email,
+					password: values.password,
+					cpf: values.cpf,
+					phone: values.phone,
+					pixKey: values.pixKey,
+				});
+			onClose();
+		} catch (reason) {
+			setError(
+				reason instanceof Error
+					? reason.message
+					: view === "login"
+						? "Não foi possível entrar. Confira e-mail e senha."
+						: "Não foi possível criar a conta. Tente novamente.",
+			);
 		} finally {
 			setLoading(false);
 		}
 	};
 
 	return (
-		<div
-			className="client-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-			onClick={resetAndClose}
-		>
+		<div className="client-modal-backdrop" onClick={close}>
 			<div
 				ref={dialogRef}
 				role="dialog"
 				aria-modal="true"
 				aria-labelledby={titleId}
 				tabIndex={-1}
-				className="glass-panel w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-2xl p-6 relative animate-[modal-in_0.2s_ease-out]"
-				onClick={(e) => e.stopPropagation()}
+				className="client-dialog"
+				onClick={(event) => event.stopPropagation()}
 			>
-				<button
-					onClick={resetAndClose}
-					className="absolute top-4 right-4 size-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
-					aria-label="Fechar"
-				>
-					<X size={16} aria-hidden="true" />
-				</button>
+				<header className="client-dialog-header">
+					<h2 id={titleId}>
+						{view === "login"
+							? "Entrar"
+							: view === "register"
+								? "Criar conta"
+								: "Bolão Celeste"}
+					</h2>
+					<button
+						type="button"
+						className="icon-button"
+						onClick={close}
+						aria-label="Fechar"
+					>
+						<X size={20} aria-hidden="true" />
+					</button>
+				</header>
 
-				{view === "options" && (
-					<div className="flex flex-col items-center text-center">
-						<div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-							<Network size={30} className="text-primary" aria-hidden="true" />
-						</div>
-						<h3 id={titleId} className="font-black uppercase italic text-lg mb-1">
-							Bolão Celeste
-						</h3>
-						<p className="text-sm text-slate-400 mb-6">
-							Entre para palpitar, competir e ganhar prêmios!
+				{view === "options" ? (
+					<div className="client-dialog-body auth-options">
+						<Constellation className="auth-stars" />
+						<p className="muted">
+							Entre para acompanhar seus palpites e disputar o ranking da
+							torcida.
 						</p>
-
 						<button
-							onClick={() => setView("login")}
-							disabled={loading}
-							className="w-full py-3.5 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mb-3 disabled:opacity-60"
+							type="button"
+							className="client-button-primary"
+							onClick={() => switchView("login")}
 						>
 							<LogIn size={18} aria-hidden="true" />
-							Entrar na Conta
+							Entrar na minha conta
 						</button>
 						<button
-							onClick={() => setView("register")}
-							disabled={loading}
-							className="w-full py-3.5 border border-white/10 hover:bg-white/5 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+							type="button"
+							className="client-button-secondary"
+							onClick={() => switchView("register")}
 						>
 							<UserRoundPlus size={18} aria-hidden="true" />
-							Criar Conta
+							Criar conta
 						</button>
 					</div>
-				)}
-
-				{view === "login" && (
-					<div>
-						<button
-							onClick={() => {
-								setView("options");
-								setError("");
-							}}
-							className="flex items-center gap-1 text-xs text-slate-300 hover:text-slate-300 mb-4 transition-colors"
-						>
-							<ArrowLeft size={14} aria-hidden="true" />
-							Voltar
-						</button>
-
-						<h3 id={titleId} className="font-black uppercase italic text-lg mb-1">Entrar</h3>
-						<p className="text-sm text-slate-400 mb-5">
-							Acesse sua conta para continuar
-						</p>
-
-						<form onSubmit={handleLogin} className="flex flex-col gap-3">
-							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
-								E-mail
-								<input
-									type="email"
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
-									placeholder="seu@email.com"
-									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
-								/>
-							</label>
-							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
-								Senha
-								<input
+				) : (
+					<form
+						ref={formRef}
+						noValidate
+						onSubmit={submit}
+						className="client-dialog-body identity-form"
+					>
+						{view === "register" && (
+							<p className="muted">
+								Com uma conta, seus palpites somam pontos no ranking e ficam no
+								seu histórico.
+							</p>
+						)}
+						{view === "register" && (
+							<ClientField
+								label="Nome completo"
+								autoComplete="name"
+								{...field("name")}
+							/>
+						)}
+						<ClientField
+							label="E-mail"
+							type="email"
+							autoComplete="email"
+							{...field("email")}
+						/>
+						<ClientField
+							label="Senha"
+							type="password"
+							autoComplete={
+								view === "login" ? "current-password" : "new-password"
+							}
+							hint={view === "register" ? "Pelo menos 8 caracteres." : undefined}
+							{...field("password")}
+						/>
+						{view === "register" && (
+							<>
+								<ClientField
+									label="Confirme a senha"
 									type="password"
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-									placeholder="••••••••"
-									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
+									autoComplete="new-password"
+									{...field("confirmation")}
 								/>
-							</label>
-
-							{error && (
-								<p className="text-red-400 text-xs font-bold" role="alert">
-									{error}
-								</p>
-							)}
-
-							<button
-								type="submit"
-								disabled={loading}
-								className="w-full py-3.5 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl transition-colors mt-1 disabled:opacity-60"
-							>
-								{loading ? "Entrando..." : "Entrar"}
-							</button>
-						</form>
-					</div>
-				)}
-
-				{view === "register" && (
-					<div>
-						<button
-							onClick={() => {
-								setView("options");
-								setError("");
-							}}
-							className="flex items-center gap-1 text-xs text-slate-300 hover:text-slate-300 mb-4 transition-colors"
-						>
-							<ArrowLeft size={14} aria-hidden="true" />
-							Voltar
-						</button>
-
-						<h3 id={titleId} className="font-black uppercase italic text-lg mb-1">
-							Criar Conta
-						</h3>
-						<p className="text-sm text-slate-400 mb-5">
-							Junte-se à comunidade cruzeirense
-						</p>
-
-						<form onSubmit={handleRegister} className="flex flex-col gap-3">
-							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
-								Nome
-								<input
-									type="text"
-									value={name}
-									onChange={(e) => setName(e.target.value)}
-									placeholder="Seu nome ou apelido"
-									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
+								<ClientField
+									label="CPF"
+									inputMode="numeric"
+									autoComplete="off"
+									hint="Identifica quem fez o pagamento dos palpites."
+									{...field("cpf")}
 								/>
-							</label>
-							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
-								E-mail
-								<input
-									type="email"
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
-									placeholder="seu@email.com"
-									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
-								/>
-							</label>
-							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
-								Senha
-								<input
-									type="password"
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-									placeholder="Mín. 8 caracteres"
-									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
-								/>
-							</label>
-							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
-								Confirmar Senha
-								<input
-									type="password"
-									value={confirmPassword}
-									onChange={(e) => setConfirmPassword(e.target.value)}
-									placeholder="Repita a senha"
-									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
-								/>
-							</label>
-							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
-								CPF
-								<input
-									type="text"
-									value={cpf}
-									onChange={(e) => setCpf(fmtCpf(e.target.value))}
-									placeholder="000.000.000-00"
-									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
-								/>
-							</label>
-							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
-								WhatsApp / Telefone
-								<input
+								<ClientField
+									label="Celular com DDD"
 									type="tel"
-									value={phone}
-									onChange={(e) => setPhone(fmtPhone(e.target.value))}
-									placeholder="(31) 99999-9999"
-									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
+									autoComplete="tel"
+									{...field("phone")}
 								/>
-							</label>
-							<label className="text-xs font-bold uppercase text-slate-300 tracking-wider">
-								Chave PIX (para receber prêmios)
-								<input
-									type="text"
-									value={pixKey}
-									onChange={(e) => setPixKey(e.target.value)}
-									placeholder="CPF, e-mail, celular ou chave aleatória"
-									className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
+								<ClientField
+									label="Chave PIX para receber prêmios"
+									autoComplete="off"
+									hint="CPF, e-mail, celular ou chave aleatória."
+									{...field("pixKey")}
 								/>
-							</label>
-
-							{error && (
-								<p className="text-red-400 text-xs font-bold" role="alert">
-									{error}
-								</p>
-							)}
-
+							</>
+						)}
+						{error && (
+							<p className="form-error" role="alert">
+								{error}
+							</p>
+						)}
+						<button
+							type="submit"
+							disabled={loading}
+							className="client-button-primary"
+						>
+							{loading
+								? view === "login"
+									? "Entrando…"
+									: "Criando conta…"
+								: view === "login"
+									? "Entrar"
+									: "Criar conta"}
+						</button>
+						<p className="muted auth-switch">
+							{view === "login" ? "Ainda não tem conta?" : "Já tem conta?"}{" "}
 							<button
-								type="submit"
-								disabled={loading}
-								className="w-full py-3.5 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl transition-colors mt-1 disabled:opacity-60"
+								type="button"
+								className="text-link"
+								onClick={() =>
+									switchView(view === "login" ? "register" : "login")
+								}
 							>
-								{loading ? "Criando..." : "Criar Conta"}
+								{view === "login" ? "Criar conta" : "Entrar"}
 							</button>
-						</form>
-					</div>
+						</p>
+					</form>
 				)}
 			</div>
 		</div>

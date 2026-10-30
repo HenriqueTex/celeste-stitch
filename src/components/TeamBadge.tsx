@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { isClubTeam } from "@/lib/format";
 
 export default function TeamBadge({
 	name,
@@ -13,7 +14,9 @@ export default function TeamBadge({
 }) {
 	const [failedUrl, setFailedUrl] = useState<string | null>(null);
 	return (
-		<span className={`team-badge ${small ? "team-badge-small" : ""}`}>
+		<span
+			className={`team-badge${small ? " team-badge-small" : ""}${isClubTeam(name) ? " is-club" : ""}`}
+		>
 			{src && src !== failedUrl ? (
 				// eslint-disable-next-line @next/next/no-img-element
 				<img
@@ -27,7 +30,7 @@ export default function TeamBadge({
 				<span aria-hidden="true">
 					{name
 						.normalize("NFD")
-						.replace(/[\u0300-\u036f]/g, "")
+						.replace(/[̀-ͯ]/g, "")
 						.slice(0, 3)
 						.toUpperCase()}
 				</span>

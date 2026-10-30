@@ -1,47 +1,34 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Goal, House, Plus, Ticket, Trophy } from "lucide-react";
 import { useBetting } from "@/components/BettingContext";
-import { apiFetch } from "@/lib/api";
-import type { HomeResponse } from "@/lib/types";
 const items = [
 	{ href: "/", label: "Início", Icon: House },
 	{ href: "/matches", label: "Jogos", Icon: Goal },
 	{ href: "/leaderboard", label: "Ranking", Icon: Trophy },
 	{ href: "/my-bets", label: "Meus palpites", Icon: Ticket },
 ];
+export function focusScorePicker() {
+	const panel = document.getElementById("palpite");
+	if (!panel) return false;
+	panel.scrollIntoView({ behavior: "smooth", block: "start" });
+	panel
+		.querySelector<HTMLInputElement>(".score-value:not(:disabled)")
+		?.focus({ preventScroll: true });
+	return true;
+}
 export default function MobileNav() {
 	const pathname = usePathname();
 	const router = useRouter();
-	const { activeMatch, setActiveMatch, openCheckout } = useBetting();
-	const [loading, setLoading] = useState(false);
-	const reviewPalpite = async () => {
-		if (loading) return;
-		if (activeMatch) {
-			openCheckout(activeMatch);
+	const { activeMatch, orderFor, openCheckout } = useBetting();
+	const order = activeMatch ? orderFor(activeMatch.id) : undefined;
+	const goToPicker = () => {
+		if (activeMatch && order) {
+			openCheckout(activeMatch, order);
 			return;
 		}
-		setLoading(true);
-		try {
-			const home = await apiFetch<HomeResponse>("/home");
-			const now = Date.now();
-			const match = (home.matches ?? []).find(
-				(item) =>
-					item.status === "open" &&
-					new Date(item.scheduledAt).getTime() > now &&
-					new Date(item.bettingDeadlineAt).getTime() > now,
-			) ?? home.nextMatch;
-			if (match) {
-				setActiveMatch(match);
-				openCheckout(match);
-			} else router.push("/matches#palpite");
-		} catch {
-			router.push("/matches#palpite");
-		} finally {
-			setLoading(false);
-		}
+		if (!focusScorePicker()) router.push("/#palpite");
 	};
 	const renderItem = ({ href, label, Icon }: (typeof items)[number]) => {
 		const active = href === "/" ? pathname === "/" : pathname?.startsWith(href);
@@ -51,7 +38,7 @@ export default function MobileNav() {
 				href={href}
 				aria-current={active ? "page" : undefined}
 			>
-				<Icon size={23} aria-hidden="true" />
+				<Icon size={22} aria-hidden="true" />
 				<span>{label}</span>
 			</Link>
 		);
@@ -62,10 +49,8 @@ export default function MobileNav() {
 			<button
 				type="button"
 				className="mobile-nav-action"
-				aria-label={loading ? "Carregando palpite" : "Revisar palpite"}
-				aria-busy={loading}
-				disabled={loading}
-				onClick={() => void reviewPalpite()}
+				aria-label={order ? "Ver meu pedido" : "Fazer palpite"}
+				onClick={goToPicker}
 			>
 				<Plus size={28} strokeWidth={2.5} aria-hidden="true" />
 			</button>

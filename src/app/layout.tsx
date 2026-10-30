@@ -12,7 +12,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-	title: "Bolão Celeste - Comunidade de Torcedores",
+	title: "Bolão Celeste — Comunidade de Torcedores",
 	description:
 		"Acompanhe os jogos do Cruzeiro, escolha seus placares e participe da comunidade Bolão Celeste.",
 };
@@ -24,13 +24,6 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="pt-BR" className="dark">
-			<head>
-				{/* eslint-disable-next-line @next/next/no-page-custom-font */}
-				<link
-					href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-					rel="stylesheet"
-				/>
-			</head>
 			<body
 				className={`${manrope.variable} font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen relative overflow-x-hidden antialiased`}
 			>

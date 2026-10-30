@@ -117,6 +117,8 @@ export interface BetOrderResponse {
 	bets: BetItem[];
 	payment: PaymentItem;
 	match: MatchItem;
+	/** Only present on the creation response; lets a guest cancel the order. */
+	cancelToken?: string | null;
 }
 
 export interface LeaderboardRow {

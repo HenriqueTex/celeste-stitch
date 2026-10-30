@@ -11,7 +11,7 @@ import IdentificationStep, {
 import PaymentStep from "@/components/checkout/PaymentStep";
 import type { PredictionLine } from "@/components/BettingContext";
 import { apiFetch, ApiError } from "@/lib/api";
-import { formatCurrency, formatMatchDate } from "@/lib/format";
+import { formatCurrency, formatMatchDate, isClubTeam } from "@/lib/format";
 import type { BetOrderResponse, MatchItem } from "@/lib/types";
 
 interface Props {
@@ -25,7 +25,7 @@ interface Props {
 	onLinesChange: (lines: PredictionLine[]) => void;
 	order?: BetOrderResponse;
 	onOrderChange: (order: BetOrderResponse) => void;
-	onNewOrder: () => void;
+	onNewOrder: (keepLines: boolean) => void;
 }
 export default function BetModal({
 	open,
@@ -48,6 +48,7 @@ export default function BetModal({
 	const [now, setNow] = useState(() => Date.now());
 	const submitLock = useRef(false);
 	const headingRef = useRef<HTMLHeadingElement>(null);
+	const bodyRef = useRef<HTMLDivElement>(null);
 	const titleId = useId();
 	const close = () => {
 		if (!busy) onClose();
@@ -56,7 +57,10 @@ export default function BetModal({
 	const stage = order ? 2 : step === "identity" ? 1 : 0;
 	useEffect(() => {
 		if (!open) return;
-		const frame = requestAnimationFrame(() => headingRef.current?.focus());
+		const frame = requestAnimationFrame(() => {
+			bodyRef.current?.scrollTo({ top: 0 });
+			headingRef.current?.focus();
+		});
 		return () => cancelAnimationFrame(frame);
 	}, [open, stage, mode]);
 	useEffect(() => {
@@ -177,7 +181,6 @@ export default function BetModal({
 			>
 				<header className="checkout-header">
 					<div>
-						<p className="eyebrow">Seu palpite</p>
 						<h2 id={titleId} ref={headingRef} tabIndex={-1}>
 							{match.homeTeam} × {match.awayTeam}
 						</h2>
@@ -206,7 +209,7 @@ export default function BetModal({
 						</li>
 					))}
 				</ol>
-				<div className="checkout-body">
+				<div className="checkout-body" ref={bodyRef}>
 					{order ? (
 						<PaymentStep
 							key={order.payment.id}
@@ -215,8 +218,8 @@ export default function BetModal({
 							onChange={onOrderChange}
 							onClose={close}
 							canStartNew={isOpen}
-							onNewOrder={() => {
-								onNewOrder();
+							onNewOrder={(keepLines) => {
+								onNewOrder(keepLines);
 								setStep("review");
 								setError("");
 							}}
@@ -253,6 +256,7 @@ export default function BetModal({
 													<span>{match.homeTeam}</span>
 													<ScorePicker
 														team={match.homeTeam}
+														club={isClubTeam(match.homeTeam)}
 														value={line.home}
 														onChange={(home) => updateLine(line.id, { home })}
 													/>
@@ -261,6 +265,7 @@ export default function BetModal({
 													<span>{match.awayTeam}</span>
 													<ScorePicker
 														team={match.awayTeam}
+														club={isClubTeam(match.awayTeam)}
 														value={line.away}
 														onChange={(away) => updateLine(line.id, { away })}
 													/>
@@ -410,7 +415,11 @@ export default function BetModal({
 								</button>
 							)}
 							{step === "review" ? (
+								// Keys keep React from reusing this node as the submit
+								// button below, which would submit the order on click.
 								<button
+									key="continue"
+									type="button"
 									className="client-button-primary"
 									disabled={!valid || !isOpen || uncertain}
 									onClick={() => changeStep("identity")}
@@ -421,6 +430,7 @@ export default function BetModal({
 							) : (
 								effectiveMode !== "choice" && (
 									<button
+										key="submit"
 										type="submit"
 										form="checkout-identity"
 										className="client-button-primary"

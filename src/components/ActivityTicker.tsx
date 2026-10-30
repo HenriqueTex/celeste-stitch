@@ -27,12 +27,15 @@ export default function ActivityTicker() {
 	}, [reload]);
 
 	return (
-		<section className="client-activity-ticker" aria-label="Atividade recente">
+		<section
+			className="client-activity-ticker"
+			aria-label="Palpites confirmados recentemente"
+		>
 			<div className="activity-ticker-inner">
 				<span className="activity-ticker-label">
 					<span className="activity-ticker-dot" aria-hidden="true" />
 					<span className="activity-ticker-label-text">
-						{items.length > 0 ? "Ao vivo" : "Atividade"}
+						{items.length > 0 ? "Confirmados agora" : "Atividade"}
 					</span>
 				</span>
 				<div className="activity-ticker-viewport">

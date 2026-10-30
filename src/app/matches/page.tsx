@@ -6,9 +6,8 @@ export default function MatchesPage() {
 	return (
 		<div className="home-dashboard">
 			<div className="page-intro">
-				<p className="eyebrow">Dentro de campo</p>
 				<h1>Jogos do Cruzeiro</h1>
-				<p>Escolha a partida e prepare seu palpite.</p>
+				<p>Todas as partidas abertas, seu status em cada uma e os últimos resultados.</p>
 			</div>
 			<MatchPrediction />
 			<MatchHistory />

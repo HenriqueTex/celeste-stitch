@@ -1,16 +1,18 @@
 "use client";
 import Link from "next/link";
+import { useAuth } from "@/components/AuthContext";
 import { useResource } from "@/hooks/use-resource";
 import type { LeaderboardRow } from "@/lib/types";
 
 export default function Leaderboard() {
 	const { data, loading, error, reload } =
 		useResource<LeaderboardRow[]>("/leaderboard");
+	const { user } = useAuth();
 	const rows = data ?? [];
+	const mine = user ? rows.find((row) => row.userId === user.id) : undefined;
 	return (
 		<div className="home-dashboard">
 			<div className="page-intro">
-				<p className="eyebrow">Nossa comunidade</p>
 				<h1>Ranking geral</h1>
 				<p>Veja quem está acertando os resultados do Cruzeiro.</p>
 			</div>
@@ -36,10 +38,17 @@ export default function Leaderboard() {
 							<dt>Pontos do líder</dt>
 							<dd>{rows[0].points}</dd>
 						</div>
-						<div>
-							<dt>Placares exatos do líder</dt>
-							<dd>{rows[0].exactHits}</dd>
-						</div>
+						{mine ? (
+							<div className="is-mine">
+								<dt>Sua posição</dt>
+								<dd>{mine.rank}º</dd>
+							</div>
+						) : (
+							<div>
+								<dt>Placares exatos do líder</dt>
+								<dd>{rows[0].exactHits}</dd>
+							</div>
+						)}
 					</dl>
 					<section
 						className="client-panel full-ranking"
@@ -52,12 +61,21 @@ export default function Leaderboard() {
 						</div>
 						<ol className="ranking-preview">
 							{rows.map((row) => (
-								<li key={row.userId}>
+								<li
+									key={row.userId}
+									className={row.userId === mine?.userId ? "is-mine" : undefined}
+									aria-current={row.userId === mine?.userId ? "true" : undefined}
+								>
 									<span className="rank-number">
 										{row.rank.toString().padStart(2, "0")}
 									</span>
 									<span className="rank-person">
-										<strong>{row.name}</strong>
+										<strong>
+											{row.name}
+											{row.userId === mine?.userId && (
+												<span className="you-tag">você</span>
+											)}
+										</strong>
 										<small>
 											{row.exactHits}{" "}
 											{row.exactHits === 1 ? "placar exato" : "placares exatos"}
@@ -71,8 +89,9 @@ export default function Leaderboard() {
 						</ol>
 					</section>
 					<p className="small-text muted">
-						Classificação por pontos acumulados nas partidas apuradas. O número
-						de placares exatos aparece abaixo de cada nome.
+						Classificação por pontos acumulados nas partidas apuradas. O placar
+						exato vale a pontuação máxima; acertar só o vencedor ou o empate vale
+						pontos parciais. Pedidos feitos sem conta não entram no ranking.
 					</p>
 				</>
 			) : (

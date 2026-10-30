@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useResource } from "@/hooks/use-resource";
-import { formatShortDate } from "@/lib/format";
+import { formatScore, formatShortDate } from "@/lib/format";
 import type { MatchItem } from "@/lib/types";
 export default function MatchHistory({
 	compact = false,
@@ -56,7 +56,7 @@ export default function MatchHistory({
 								{match.status === "cancelled"
 									? "Cancelado"
 									: match.result
-										? `${match.result.homeScore} – ${match.result.awayScore}`
+										? formatScore(match.result.homeScore, match.result.awayScore)
 										: "A apurar"}
 							</span>
 						</li>

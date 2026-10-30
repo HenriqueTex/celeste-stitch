@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
 import AuthModal from "@/components/AuthModal";
+import Constellation from "@/components/Constellation";
 import ProfileModal from "@/components/ProfileModal";
 const links = [
 	{ href: "/", label: "Início" },
@@ -12,14 +13,25 @@ const links = [
 	{ href: "/leaderboard", label: "Ranking" },
 	{ href: "/my-bets", label: "Meus palpites" },
 ];
+type AuthRequest = {
+	view: "login" | "register";
+	values?: Record<string, string>;
+};
 export default function Header() {
 	const pathname = usePathname();
 	const { user, isLoggedIn, logout } = useAuth();
-	const [auth, setAuth] = useState<"login" | "register" | null>(null);
+	const [auth, setAuth] = useState<AuthRequest | null>(null);
 	const [profile, setProfile] = useState(false);
 	const [menu, setMenu] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
 	const menuButton = useRef<HTMLButtonElement>(null);
+	const displayName = user?.nickname || user?.fullName || user?.email || "";
+	useEffect(() => {
+		const request = (event: Event) =>
+			setAuth((event as CustomEvent<AuthRequest>).detail);
+		window.addEventListener("celeste:open-auth", request);
+		return () => window.removeEventListener("celeste:open-auth", request);
+	}, []);
 	useEffect(() => {
 		if (!menu) return;
 		const outside = (event: PointerEvent) => {
@@ -44,7 +56,7 @@ export default function Header() {
 				<div className="client-header-inner">
 					<Link href="/" className="brand">
 						<span className="brand-mark" aria-hidden="true">
-							bc.
+							<Constellation />
 						</span>
 						<span>
 							Bolão <strong>Celeste</strong>
@@ -66,19 +78,20 @@ export default function Header() {
 							<button
 								ref={menuButton}
 								className="account-trigger"
-								aria-label="Abrir opções da minha conta"
+								aria-label={`Conta de ${displayName}`}
 								aria-expanded={menu}
 								aria-controls="account-options"
 								onClick={() => setMenu(!menu)}
 							>
-								<span className="avatar-letter">
-									{(user?.nickname || user?.fullName || "C").charAt(0)}
+								<span className="avatar-letter" aria-hidden="true">
+									{user?.initials || displayName.charAt(0)}
 								</span>
+								<span className="account-name">{displayName}</span>
 								<ChevronDown size={16} aria-hidden="true" />
 							</button>
 							{menu && (
 								<div id="account-options" className="account-options">
-									<p>{user?.nickname || user?.fullName}</p>
+									<p>{displayName}</p>
 									<button
 										onClick={() => {
 											setProfile(true);
@@ -104,13 +117,13 @@ export default function Header() {
 						<div className="header-actions">
 							<button
 								className="create-account-link"
-								onClick={() => setAuth("register")}
+								onClick={() => setAuth({ view: "register" })}
 							>
 								Criar conta
 							</button>
 							<button
 								className="client-button-secondary"
-								onClick={() => setAuth("login")}
+								onClick={() => setAuth({ view: "login" })}
 							>
 								Entrar
 							</button>
@@ -120,7 +133,8 @@ export default function Header() {
 			</header>
 			<AuthModal
 				open={auth !== null}
-				initialView={auth ?? "login"}
+				initialView={auth?.view ?? "login"}
+				initialValues={auth?.values}
 				onClose={() => setAuth(null)}
 			/>
 			<ProfileModal open={profile} onClose={() => setProfile(false)} />

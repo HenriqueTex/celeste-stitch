@@ -1,26 +1,13 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { CircleCheck, X } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
+import ClientField from "@/components/ClientField";
 import { useModalAccessibility } from "@/hooks/use-modal-accessibility";
+import { formatCpf, formatPhone } from "@/lib/format";
 
-function fmtCPF(v: string) {
-	return v
-		.replace(/\D/g, "")
-		.slice(0, 11)
-		.replace(/(\d{3})(\d)/, "$1.$2")
-		.replace(/(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
-		.replace(/\.(\d{3})(\d)/, ".$1-$2");
-}
-
-function fmtPhone(v: string) {
-	return v
-		.replace(/\D/g, "")
-		.slice(0, 11)
-		.replace(/^(\d{2})(\d)/, "($1) $2")
-		.replace(/(\d{5})(\d)/, "$1-$2");
-}
+type FieldName = "fullName" | "nickname" | "cpf" | "phone" | "pixKey";
 
 export default function ProfileModal({
 	open,
@@ -30,26 +17,34 @@ export default function ProfileModal({
 	onClose: () => void;
 }) {
 	const { user, updateProfile } = useAuth();
-	const [form, setForm] = useState({
+	const [form, setForm] = useState<Record<FieldName, string>>({
 		fullName: "",
 		nickname: "",
 		cpf: "",
 		phone: "",
 		pixKey: "",
 	});
+	const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState(false);
 	const [loading, setLoading] = useState(false);
 
+	const seeded = useRef(false);
 	useEffect(() => {
-		if (open && user) {
+		if (!open) {
+			seeded.current = false;
+			return;
+		}
+		if (user && !seeded.current) {
+			seeded.current = true;
 			setForm({
 				fullName: user.fullName ?? "",
 				nickname: user.nickname ?? "",
-				cpf: user.cpf ?? "",
-				phone: user.phone ?? "",
+				cpf: formatCpf(user.cpf ?? ""),
+				phone: formatPhone(user.phone ?? ""),
 				pixKey: user.pixKey ?? "",
 			});
+			setErrors({});
 			setError("");
 			setSuccess(false);
 		}
@@ -60,30 +55,48 @@ export default function ProfileModal({
 
 	if (!open) return null;
 
-	const handleSave = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const field = (name: FieldName) => ({
+		value: form[name],
+		error: errors[name],
+		onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+			const raw = event.target.value;
+			setSuccess(false);
+			setForm((previous) => ({
+				...previous,
+				[name]:
+					name === "cpf"
+						? formatCpf(raw)
+						: name === "phone"
+							? formatPhone(raw)
+							: raw,
+			}));
+			if (errors[name])
+				setErrors((previous) => ({ ...previous, [name]: undefined }));
+		},
+	});
+
+	const handleSave = async (event: React.FormEvent) => {
+		event.preventDefault();
 		setError("");
 		setSuccess(false);
-		if (!form.fullName.trim()) {
-			setError("Nome é obrigatório.");
-			return;
-		}
-		if (form.cpf && form.cpf.replace(/\D/g, "").length < 11) {
-			setError("CPF inválido.");
-			return;
-		}
-		if (form.phone && form.phone.replace(/\D/g, "").length < 10) {
-			setError("Telefone inválido.");
-			return;
-		}
+		const found: Partial<Record<FieldName, string>> = {};
+		if (!form.fullName.trim()) found.fullName = "Informe seu nome.";
+		if (form.cpf && form.cpf.replace(/\D/g, "").length !== 11)
+			found.cpf = "Informe os 11 dígitos do CPF.";
+		if (form.phone && form.phone.replace(/\D/g, "").length < 10)
+			found.phone = "Informe o celular com DDD, por exemplo (31) 99999-9999.";
+		setErrors(found);
+		if (Object.keys(found).length) return;
 
 		try {
 			setLoading(true);
 			await updateProfile(form);
 			setSuccess(true);
-		} catch (err) {
+		} catch (reason) {
 			setError(
-				err instanceof Error ? err.message : "Não foi possível salvar o perfil."
+				reason instanceof Error
+					? reason.message
+					: "Não foi possível salvar o perfil.",
 			);
 		} finally {
 			setLoading(false);
@@ -91,132 +104,86 @@ export default function ProfileModal({
 	};
 
 	return (
-		<div
-			className="client-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
-			onClick={onClose}
-		>
+		<div className="client-modal-backdrop" onClick={onClose}>
 			<div
 				ref={dialogRef}
 				role="dialog"
 				aria-modal="true"
 				aria-labelledby={titleId}
 				tabIndex={-1}
-				className="glass-panel w-full max-w-md rounded-2xl overflow-hidden animate-[modal-in_0.2s_ease-out] max-h-[92dvh] flex flex-col"
-				onClick={(e) => e.stopPropagation()}
+				className="client-dialog"
+				onClick={(event) => event.stopPropagation()}
 			>
-				<div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/8 shrink-0">
+				<header className="client-dialog-header">
 					<div>
-						<h3 id={titleId} className="font-black text-base uppercase italic tracking-tight">
-							Editar Perfil
-						</h3>
-						<p className="text-xs text-slate-300 font-bold mt-0.5">
-							{user?.email}
-						</p>
+						<h2 id={titleId}>Editar perfil</h2>
+						<p className="muted small-text">{user?.email}</p>
 					</div>
 					<button
+						type="button"
+						className="icon-button"
 						onClick={onClose}
-						className="size-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
 						aria-label="Fechar"
 					>
-						<X size={16} aria-hidden="true" />
+						<X size={20} aria-hidden="true" />
 					</button>
-				</div>
+				</header>
 
 				<form
+					noValidate
 					onSubmit={handleSave}
-					className="overflow-y-auto px-5 py-5 flex-1 flex flex-col gap-4"
+					className="client-dialog-body identity-form"
 				>
-					<div>
-						<label className="text-xs font-black uppercase tracking-wider text-slate-300 mb-1 block">
-							Nome completo
-						</label>
-						<input
-							type="text"
-							value={form.fullName}
-							onChange={(e) =>
-								setForm((f) => ({ ...f, fullName: e.target.value }))
-							}
-							placeholder="João da Silva"
-							className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
-						/>
-					</div>
-
-					<div>
-						<label className="text-xs font-black uppercase tracking-wider text-slate-300 mb-1 block">
-							Apelido
-						</label>
-						<input
-							type="text"
-							value={form.nickname}
-							onChange={(e) =>
-								setForm((f) => ({ ...f, nickname: e.target.value }))
-							}
-							placeholder="Como aparece no ranking"
-							className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
-						/>
-					</div>
-
-					<div>
-						<label className="text-xs font-black uppercase tracking-wider text-slate-300 mb-1 block">
-							CPF
-						</label>
-						<input
-							type="text"
-							value={form.cpf}
-							onChange={(e) =>
-								setForm((f) => ({ ...f, cpf: fmtCPF(e.target.value) }))
-							}
-							placeholder="000.000.000-00"
-							className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
-						/>
-					</div>
-
-					<div>
-						<label className="text-xs font-black uppercase tracking-wider text-slate-300 mb-1 block">
-							WhatsApp / Telefone
-						</label>
-						<input
-							type="tel"
-							value={form.phone}
-							onChange={(e) =>
-								setForm((f) => ({ ...f, phone: fmtPhone(e.target.value) }))
-							}
-							placeholder="(31) 99999-9999"
-							className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
-						/>
-					</div>
-
-					<div>
-						<label className="text-xs font-black uppercase tracking-wider text-slate-300 mb-1 block">
-							Chave PIX (para receber prêmios)
-						</label>
-						<input
-							type="text"
-							value={form.pixKey}
-							onChange={(e) => setForm((f) => ({ ...f, pixKey: e.target.value }))}
-							placeholder="CPF, e-mail, celular ou chave aleatória"
-							className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors"
-						/>
-					</div>
+					<ClientField
+						label="Nome completo"
+						autoComplete="name"
+						{...field("fullName")}
+					/>
+					<ClientField
+						label="Apelido"
+						autoComplete="nickname"
+						hint="É assim que você aparece no ranking."
+						{...field("nickname")}
+					/>
+					<ClientField
+						label="CPF"
+						inputMode="numeric"
+						autoComplete="off"
+						{...field("cpf")}
+					/>
+					<ClientField
+						label="Celular com DDD"
+						type="tel"
+						autoComplete="tel"
+						{...field("phone")}
+					/>
+					<ClientField
+						label="Chave PIX para receber prêmios"
+						autoComplete="off"
+						hint="CPF, e-mail, celular ou chave aleatória."
+						{...field("pixKey")}
+					/>
 
 					{error && (
-						<p className="text-red-400 text-xs font-bold" role="alert">
+						<p className="form-error" role="alert">
 							{error}
 						</p>
 					)}
-					{success && (
-						<p className="text-emerald-400 text-xs font-bold flex items-center gap-1">
-							<CircleCheck size={14} aria-hidden="true" />
-							Perfil atualizado com sucesso.
-						</p>
-					)}
+					<p className="form-success" role="status">
+						{success && (
+							<>
+								<CircleCheck size={16} aria-hidden="true" />
+								Perfil atualizado.
+							</>
+						)}
+					</p>
 
 					<button
 						type="submit"
 						disabled={loading}
-						className="w-full py-4 bg-primary hover:bg-blue-600 text-white font-black rounded-xl transition-colors mt-2 flex items-center justify-center gap-2 disabled:opacity-60"
+						className="client-button-primary"
 					>
-						{loading ? "Salvando..." : "Salvar alterações"}
+						{loading ? "Salvando…" : "Salvar alterações"}
 					</button>
 				</form>
 			</div>

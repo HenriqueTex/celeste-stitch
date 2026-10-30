@@ -12,25 +12,18 @@ export default function ScorePicker({
 	team,
 	value,
 	onChange,
+	club = false,
 	disabled = false,
 }: {
 	team: string;
 	value: Score;
 	onChange: (value: Score) => void;
+	club?: boolean;
 	disabled?: boolean;
 }) {
 	const id = useId();
 	return (
-		<div className="score-picker">
-			<button
-				type="button"
-				className="score-adjust"
-				disabled={disabled || value === "" || value <= 0}
-				aria-label={`Diminuir gols de ${team}`}
-				onClick={() => onChange(Math.max(0, Number(value) - 1))}
-			>
-				<Minus size={18} aria-hidden="true" />
-			</button>
+		<div className={`score-picker${club ? " is-club" : ""}`}>
 			<label htmlFor={id} className="sr-only">
 				Gols de {team}
 			</label>
@@ -51,15 +44,26 @@ export default function ScorePicker({
 				}}
 				className="score-value"
 			/>
-			<button
-				type="button"
-				className="score-adjust"
-				disabled={disabled || Number(value) >= 20}
-				aria-label={`Aumentar gols de ${team}`}
-				onClick={() => onChange(Math.min(20, Number(value) + 1))}
-			>
-				<Plus size={18} aria-hidden="true" />
-			</button>
+			<div className="score-steps">
+				<button
+					type="button"
+					className="score-adjust"
+					disabled={disabled || value === "" || value <= 0}
+					aria-label={`Diminuir gols de ${team}`}
+					onClick={() => onChange(Math.max(0, Number(value) - 1))}
+				>
+					<Minus size={18} aria-hidden="true" />
+				</button>
+				<button
+					type="button"
+					className="score-adjust"
+					disabled={disabled || Number(value) >= 20}
+					aria-label={`Aumentar gols de ${team}`}
+					onClick={() => onChange(Math.min(20, Number(value) + 1))}
+				>
+					<Plus size={18} aria-hidden="true" />
+				</button>
+			</div>
 		</div>
 	);
 }

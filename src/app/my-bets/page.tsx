@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import MyBetsPanel from "@/components/MyBetsPanel";
 
 export const metadata: Metadata = {
-	title: "Meus Palpites - Bolão Celeste",
+	title: "Meus palpites — Bolão Celeste",
 	description:
-		"Acompanhe seus palpites, ganhos e histórico de apostas.",
+		"Acompanhe seus palpites, pagamentos e resultados.",
 };
 
 export default function MyBetsPage() {
