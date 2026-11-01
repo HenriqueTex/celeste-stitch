@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "sfmono-regular",
+        "createdAt": "2026-10-31T23:05:47.075Z",
+        "reason": "Claude: fallback of the ui-monospace stack that DESIGN.md (Label/Mono Font) sanctions for the PIX copy-paste code"
+      }
+    ]
+  }
+}

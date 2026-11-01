@@ -267,8 +267,8 @@ body:has(.client-shell) {
 	background-image: url("/images/bolao-celeste-editorial-background.webp");
 	background-repeat: no-repeat;
 	/* Crop past the player so the gutter shows crowd and flags */
-	background-position: -528px top;
-	background-size: max(2100px, 112vw) auto;
+	background-position: min(-528px, -33.7vw) top;
+	background-size: max(2100px, 134vw) auto;
 	-webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent);
 	mask-image: linear-gradient(to bottom, #000 72%, transparent);
 }
@@ -276,6 +276,7 @@ body:has(.client-shell) {
 @media (min-width: 1920px) {
 	.editorial-art {
 		background-position: -40px top;
+		background-size: 112vw auto;
 	}
 }
 
