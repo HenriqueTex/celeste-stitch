@@ -49,16 +49,19 @@ const BettingContext = createContext<BettingState | null>(null);
 const ORDERS_KEY = "bolao_orders";
 const ORDER_RETENTION = 7 * 24 * 60 * 60 * 1000;
 
+/** Orders keyed by payment id, so a match can hold as many orders as the visitor places. */
 function readStoredOrders() {
 	try {
 		const raw = localStorage.getItem(ORDERS_KEY);
-		const parsed = raw ? (JSON.parse(raw) as Record<number, StoredOrder>) : {};
+		// Older versions keyed by match id; the entries are the same, so re-key them.
+		const parsed = raw ? (JSON.parse(raw) as Record<string, StoredOrder>) : {};
 		const cutoff = Date.now() - ORDER_RETENTION;
 		return Object.fromEntries(
-			Object.entries(parsed).filter(
-				([, entry]) =>
-					new Date(entry.order.match.scheduledAt).getTime() > cutoff,
-			),
+			Object.values(parsed)
+				.filter(
+					(entry) => new Date(entry.order.match.scheduledAt).getTime() > cutoff,
+				)
+				.map((entry) => [entry.order.payment.id, entry]),
 		) as Record<number, StoredOrder>;
 	} catch {
 		return {};
@@ -83,6 +86,10 @@ export function BettingProvider({ children }: { children: ReactNode }) {
 	const [match, setMatch] = useState<MatchItem | null>(null);
 	const [activeMatch, setActiveMatch] = useState<MatchItem | null>(null);
 	const [open, setOpen] = useState(false);
+	// Payment id the checkout shows; null while it builds a new order.
+	const [viewing, setViewing] = useState<number | null>(null);
+	// Bumped on every opening so the checkout starts fresh at its first step.
+	const [session, setSession] = useState(0);
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setOrders(readStoredOrders());
@@ -102,14 +109,16 @@ export function BettingProvider({ children }: { children: ReactNode }) {
 		entry && (entry.ownerId === null || entry.ownerId === user?.id)
 			? entry.order
 			: undefined;
-	// A cancelled order no longer locks the match; only the checkout still shows it.
-	const orderFor = (id: number) => {
-		const order = visible(orders[id]);
-		return order?.payment.status === "cancelled" ? undefined : order;
-	};
+	// Newest first, so each match surfaces its latest order.
 	const savedOrders = Object.values(orders)
 		.map((entry) => visible(entry))
-		.filter((order): order is BetOrderResponse => Boolean(order));
+		.filter((order): order is BetOrderResponse => Boolean(order))
+		.sort((a, b) => b.payment.id - a.payment.id);
+	// The latest live order for a match; cancelled ones only stay in the checkout.
+	const orderFor = (id: number) =>
+		savedOrders.find(
+			(order) => order.match.id === id && order.payment.status !== "cancelled",
+		);
 	const linesFor = (id: number) => drafts[id] ?? initialLines;
 	const updateLines = (id: number, lines: PredictionLine[]) =>
 		setDrafts((previous) => ({ ...previous, [id]: lines }));
@@ -117,42 +126,31 @@ export function BettingProvider({ children }: { children: ReactNode }) {
 		(order: BetOrderResponse) =>
 			setOrders((previous) => ({
 				...previous,
-				[order.match.id]: {
+				[order.payment.id]: {
 					order,
 					ownerId:
-						previous[order.match.id]?.order.payment.id === order.payment.id
-							? previous[order.match.id].ownerId
+						order.payment.id in previous
+							? previous[order.payment.id].ownerId
 							: (user?.id ?? null),
 				},
 			})),
 		[user?.id],
 	);
+	/** With an order, shows that order; without one, starts a new order from the draft. */
 	const openCheckout = (selected: MatchItem, order?: BetOrderResponse) => {
-		if (!order && orders[selected.id]?.order.payment.status === "cancelled")
-			setOrders((current) => {
-				const next = { ...current };
-				delete next[selected.id];
-				return next;
-			});
 		if (order) {
 			saveOrder(order);
-			updateLines(
-				selected.id,
-				order.bets.map((bet) => ({
-					id: String(bet.id),
-					home: bet.homeScorePrediction,
-					away: bet.awayScorePrediction,
-					tickets: bet.tickets,
-				})),
-			);
 			setUncertainMatches((previous) => ({
 				...previous,
 				[selected.id]: false,
 			}));
 		}
+		setViewing(order?.payment.id ?? null);
+		setSession((current) => current + 1);
 		setMatch(selected);
 		setOpen(true);
 	};
+	const viewedOrder = viewing === null ? undefined : visible(orders[viewing]);
 
 	return (
 		<BettingContext.Provider
@@ -184,15 +182,21 @@ export function BettingProvider({ children }: { children: ReactNode }) {
 			)}
 			{match && (
 				<BetModal
-					key={match.id}
+					key={`${match.id}-${session}`}
 					open={open}
 					onClose={() => setOpen(false)}
 					match={match}
 					onMatchChange={setMatch}
 					lines={linesFor(match.id)}
 					onLinesChange={(lines) => updateLines(match.id, lines)}
-					order={visible(orders[match.id])}
-					onOrderChange={saveOrder}
+					order={viewedOrder}
+					onOrderChange={(order) => {
+						saveOrder(order);
+						if (order.payment.id === viewing) return;
+						// A new order was placed: show it and clear the draft for the next one.
+						setViewing(order.payment.id);
+						updateLines(match.id, initialLines);
+					}}
 					uncertain={Boolean(uncertainMatches[match.id])}
 					onUncertain={() =>
 						setUncertainMatches((previous) => ({
@@ -207,12 +211,8 @@ export function BettingProvider({ children }: { children: ReactNode }) {
 						}))
 					}
 					onNewOrder={(keepLines) => {
-						const previous = visible(orders[match.id]);
-						setOrders((current) => {
-							const next = { ...current };
-							delete next[match.id];
-							return next;
-						});
+						const previous = viewedOrder;
+						setViewing(null);
 						updateLines(
 							match.id,
 							keepLines && previous

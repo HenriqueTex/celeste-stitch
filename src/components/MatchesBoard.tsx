@@ -81,26 +81,27 @@ function FixtureCard({
 				<small className="prediction-chip" data-tone={state.tone}>
 					{state.label}
 				</small>
-				{order ? (
-					<button
-						type="button"
-						className="client-button-secondary"
-						onClick={() => openCheckout(match, order)}
-					>
-						Ver meu pedido
-					</button>
-				) : (
-					open && (
+				<div className="fixture-actions">
+					{order && (
+						<button
+							type="button"
+							className="client-button-secondary"
+							onClick={() => openCheckout(match, order)}
+						>
+							Ver meu pedido
+						</button>
+					)}
+					{open && (
 						<button
 							type="button"
 							className="client-button-primary"
 							onClick={() => openCheckout(match)}
 						>
-							Fazer palpite
+							{order ? "Novo palpite" : "Fazer palpite"}
 							<ArrowRight size={17} aria-hidden="true" />
 						</button>
-					)
-				)}
+					)}
+				</div>
 			</div>
 			{open && (
 				<p className="fixture-deadline">

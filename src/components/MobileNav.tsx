@@ -24,11 +24,12 @@ export default function MobileNav() {
 			: (activeMatches ?? [])
 					.filter(acceptsPicks)
 					.sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt))[0];
-	const order = target ? orderFor(target.id) : undefined;
 	// Opens the checkout on its review step, the same screen "Revisar palpite" leads to.
+	// A closed match with an order opens that order instead.
 	const goToPicker = () => {
-		if (target) openCheckout(target, order);
-		else router.push("/matches");
+		if (!target) router.push("/matches");
+		else if (acceptsPicks(target)) openCheckout(target);
+		else openCheckout(target, orderFor(target.id));
 	};
 	const renderItem = ({ href, label, Icon }: (typeof items)[number]) => {
 		const active = href === "/" ? pathname === "/" : pathname?.startsWith(href);
@@ -49,7 +50,9 @@ export default function MobileNav() {
 			<button
 				type="button"
 				className="mobile-nav-action"
-				aria-label={order ? "Ver meu pedido" : "Fazer palpite"}
+				aria-label={
+					target && !acceptsPicks(target) ? "Ver meu pedido" : "Fazer palpite"
+				}
 				onClick={goToPicker}
 			>
 				<Plus size={28} strokeWidth={2.5} aria-hidden="true" />

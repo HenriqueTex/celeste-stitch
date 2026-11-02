@@ -172,21 +172,19 @@ export function MatchWorkspace({
 		);
 	const lines = linesFor(match.id);
 	const order = orderFor(match.id);
-	const first = order?.bets[0]
-		? {
-				home: order.bets[0].homeScorePrediction,
-				away: order.bets[0].awayScorePrediction,
-			}
-		: lines[0];
+	const first = lines[0];
 	const isOpen = acceptsPicks(match, now);
+	// Picks stay open for more orders; once closed, the panel only leads to the order.
+	const showOrder = Boolean(order) && !isOpen;
 	const choices = available.some((item) => item.id === match.id)
 		? available
 		: [match, ...available];
 	const showChooser = choices.length > 1;
-	const totalTickets = order
-		? order.bets.reduce((sum, bet) => sum + bet.tickets, 0)
-		: lines.reduce((sum, line) => sum + line.tickets, 0);
-	const scoreCount = order ? order.bets.length : lines.length;
+	const totalTickets =
+		showOrder && order
+			? order.bets.reduce((sum, bet) => sum + bet.tickets, 0)
+			: lines.reduce((sum, line) => sum + line.tickets, 0);
+	const scoreCount = showOrder && order ? order.bets.length : lines.length;
 	const valid = lines.every((line) => allowedPick(match, line.home, line.away));
 	const clubMatch = isClubTeam(match.homeTeam) || isClubTeam(match.awayTeam);
 	const teams = [
@@ -224,7 +222,8 @@ export function MatchWorkspace({
 				<form
 					onSubmit={(event) => {
 						event.preventDefault();
-						if (order || (valid && isOpen)) openCheckout(match);
+						if (valid && isOpen) openCheckout(match);
+						else if (order) openCheckout(match, order);
 					}}
 				>
 					<div className="score-board">
@@ -249,7 +248,7 @@ export function MatchWorkspace({
 											team.side,
 											team.side === "home" ? first.away : first.home,
 										)}
-										disabled={!isOpen || Boolean(order)}
+										disabled={!isOpen}
 										onChange={(score) =>
 											updateLines(
 												match.id,
@@ -265,20 +264,31 @@ export function MatchWorkspace({
 							</Fragment>
 						))}
 					</div>
-					{order ? (
+					{clubMatch && isOpen && (
 						<p className="score-instruction">
-							Seu pedido está salvo neste navegador.
+							Vale vitória do Cruzeiro ou empate.
 						</p>
-					) : (
-						clubMatch && (
-							<p className="score-instruction">
-								Vale vitória do Cruzeiro ou empate.
-							</p>
-						)
+					)}
+					{order && (
+						<p className="order-line">
+							<small
+								className="prediction-chip"
+								data-tone={predictionState(order, first).tone}
+							>
+								{predictionState(order, first).label}
+							</small>
+							<button
+								type="button"
+								className="text-link"
+								onClick={() => openCheckout(match, order)}
+							>
+								Ver pedido #{order.payment.id}
+							</button>
+						</p>
 					)}
 					<div className="prediction-review">
 						<p aria-live="polite">
-							{order ? (
+							{showOrder ? (
 								"Acompanhe seu pedido"
 							) : valid ? (
 								<>
@@ -301,16 +311,18 @@ export function MatchWorkspace({
 							</span>
 							<strong>
 								{formatCurrency(
-									order?.payment.amount ?? totalTickets * match.ticketPrice,
+									showOrder && order
+										? order.payment.amount
+										: totalTickets * match.ticketPrice,
 								)}
 							</strong>
 						</div>
 						<button
 							type="submit"
 							className="client-button-primary"
-							disabled={!order && (!isOpen || !valid)}
+							disabled={!showOrder && (!isOpen || !valid)}
 						>
-							{order
+							{showOrder
 								? "Ver meu pedido"
 								: isOpen
 									? "Revisar palpite"
