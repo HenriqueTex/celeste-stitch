@@ -14,9 +14,17 @@ interface AdminAuthContextType {
 	admin: AuthUser | null;
 	adminToken: string | null;
 	isAdminLoggedIn: boolean;
+	/** Full admin (money, settings, staff); operators only run matches and bettors. */
+	isAdmin: boolean;
 	isLoading: boolean;
-	adminLogin: (email: string, password: string) => Promise<void>;
+	/** Resolves `twoFactorRequired` when the account asks for an authenticator code. */
+	adminLogin: (
+		email: string,
+		password: string,
+		code?: string,
+	) => Promise<{ twoFactorRequired: boolean }>;
 	adminLogout: () => Promise<void>;
+	refreshAdmin: () => Promise<void>;
 }
 
 export const AdminAuthContext = createContext<AdminAuthContextType | null>(null);
@@ -70,10 +78,10 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 		if (!adminToken) return;
 		let cancelled = false;
 
-		apiFetch<AuthUser>("/account/profile", { token: adminToken })
+		apiFetch<AuthUser>("/admin/me", { token: adminToken })
 			.then((profile) => {
 				if (cancelled) return;
-				if (profile.role !== "admin") {
+				if (profile.role === "user") {
 					setAdmin(null);
 					setAdminToken(null);
 					persistAdmin(null, null);
@@ -96,17 +104,25 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 		};
 	}, [adminToken]);
 
-	const adminLogin = async (email: string, password: string) => {
-		const session = await apiFetch<{ user: AuthUser; token: string }>(
-			"/admin/auth/login",
-			{
-				method: "POST",
-				body: JSON.stringify({ email, password }),
-			}
-		);
+	const adminLogin = async (email: string, password: string, code?: string) => {
+		const session = await apiFetch<
+			{ user: AuthUser; token: string } | { twoFactorRequired: true }
+		>("/admin/auth/login", {
+			method: "POST",
+			body: JSON.stringify({ email, password, ...(code ? { code } : {}) }),
+		});
+		if ("twoFactorRequired" in session) return { twoFactorRequired: true };
 		setAdmin(session.user);
 		setAdminToken(session.token);
 		persistAdmin(session.user, session.token);
+		return { twoFactorRequired: false };
+	};
+
+	const refreshAdmin = async () => {
+		if (!adminToken) return;
+		const profile = await apiFetch<AuthUser>("/admin/me", { token: adminToken });
+		setAdmin(profile);
+		persistAdmin(profile, adminToken);
 	};
 
 	const adminLogout = async () => {
@@ -129,9 +145,11 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 		admin,
 		adminToken,
 		isAdminLoggedIn: !!admin && !!adminToken,
+		isAdmin: admin?.role === "admin",
 		isLoading,
 		adminLogin,
 		adminLogout,
+		refreshAdmin,
 	};
 
 	return (

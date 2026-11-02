@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/components/AdminAuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/api";
@@ -24,6 +24,10 @@ export default function AdminSettingsPage() {
 		<Card className="max-w-2xl">
 			<CardHeader>
 				<CardTitle>Configurações Operacionais</CardTitle>
+				<CardDescription>
+					Pontos e percentual valem para partidas abertas depois da mudança; cada partida
+					guarda as regras do momento em que abriu.
+				</CardDescription>
 			</CardHeader>
 			<CardContent className="grid gap-4">
 				<div className="grid sm:grid-cols-2 gap-4">

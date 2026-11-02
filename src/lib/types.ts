@@ -3,7 +3,9 @@ export interface AuthUser {
 	fullName: string | null;
 	nickname: string | null;
 	email: string;
-	role: "user" | "admin";
+	role: "user" | "admin" | "operator";
+	/** Staff sessions only. */
+	twoFactorEnabled?: boolean;
 	status: "active" | "blocked";
 	cpf: string | null;
 	phone: string | null;
@@ -13,6 +15,20 @@ export interface AuthUser {
 	createdAt: string;
 	updatedAt: string | null;
 	initials: string;
+}
+
+export interface MatchRules {
+	winnerPoolPercentage: number;
+	exactPoints: number;
+	partialPoints: number;
+}
+
+export interface MatchPool {
+	/** Winners' share of this match plus pots carried over from earlier matches. */
+	prizePool: number;
+	bonus: number;
+	carriedOver: number;
+	carriedOverToMatchId: number | null;
 }
 
 export interface MatchStats {
@@ -55,6 +71,10 @@ export interface MatchItem {
 	ticketPrice: number;
 	status: string;
 	notes: string | null;
+	cancelledAt?: string | null;
+	cancelReason?: string | null;
+	rules?: MatchRules;
+	pool?: MatchPool;
 	result: {
 		homeScore: number;
 		awayScore: number;
@@ -168,13 +188,23 @@ export interface HomeResponse {
 }
 
 export interface DashboardResponse {
+	period: { from: string | null; to: string | null };
 	metrics: {
 		grossRevenue: number;
+		orders: number;
 		ticketsSold: number;
+		providerFees: number;
+		netRevenue: number;
 		prizesReserved: number;
+		prizesPending: number;
+		prizesPaid: number;
 		margin: number;
+		refunded: number;
 		pendingPayments: number;
+		refundPending: number;
+		newUsers: number;
 	};
+	series: Array<{ day: string; orders: number; revenue: number }>;
 	recentPayments: Array<{
 		id: number;
 		status: string;
@@ -186,34 +216,163 @@ export interface DashboardResponse {
 	}>;
 }
 
+export interface FinancialMatchRow {
+	id: number;
+	label: string;
+	scheduledAt: string;
+	status: string;
+	revenue: number;
+	providerFees: number;
+	prizePool: number;
+	bonusReceived: number;
+	prizes: number;
+	prizesPaid: number;
+	carriedOver: number;
+	refunded: number;
+	refundPending: number;
+	houseShare: number;
+	net: number;
+}
+
+export interface Paginated<T> {
+	data: T[];
+	meta: { page: number; perPage: number; total: number; lastPage: number };
+}
+
 export interface AdminPaymentItem extends PaymentItem {
-	bet: {
-		id: number;
-		userId: number;
-		snapshotName: string;
-		prediction: string;
-		tickets: number;
-		status: string;
+	providerPaymentId: string | null;
+	providerStatus: string | null;
+	providerFee: number | null;
+	netAmount: number | null;
+	expiresAt: string | null;
+	refundedAt: string | null;
+	refundReference: string | null;
+	buyer: {
+		name: string;
+		email: string;
+		cpf: string;
+		phone: string;
+		userId: number | null;
 	} | null;
-	match: MatchItem | null;
+	match: { id: number; homeTeam: string; awayTeam: string } | null;
+	totalTickets: number;
+	bets: Array<{ id: number; prediction: string; tickets: number; status: string }>;
 }
 
 export interface AdminPrizeItem extends PrizeItem {
-	bet: {
-		id: number;
-		snapshotName: string;
-		prediction: string;
-		tickets: number;
+	hasReceipt: boolean;
+	winner: {
+		name: string;
+		nickname: string | null;
+		email: string;
+		cpf: string;
+		phone: string;
+		pixKey: string;
+		guest: boolean;
 	};
-	match: MatchItem;
+	bet: { id: number; prediction: string; tickets: number };
+	match: { id: number; homeTeam: string; awayTeam: string; scheduledAt: string };
 }
 
-export interface AdminUserItem extends AuthUser {
-	stats: {
-		bets: number;
-		payments: number;
-		prizes: number;
+export interface AdminUserItem {
+	id: number;
+	fullName: string | null;
+	nickname: string | null;
+	email: string;
+	cpf: string | null;
+	phone: string | null;
+	pixKey: string | null;
+	status: "active" | "blocked";
+	avatarUrl: string | null;
+	createdAt: string | null;
+	lastLoginAt: string | null;
+	stats: { tickets: number; spent: number; prizes: number; points: number };
+}
+
+export interface AdminUserDetail {
+	user: AuthUser & { stats: AdminUserItem["stats"] | null };
+	orders: Array<
+		Omit<AdminPaymentItem, "bets"> & {
+			bets: Array<{
+				id: number;
+				prediction: string;
+				tickets: number;
+				status: string;
+				resultStatus: string | null;
+				points: number;
+			}>;
+		}
+	>;
+	prizes: Array<PrizeItem & { match: { id: number; homeTeam: string; awayTeam: string } }>;
+	points: Array<{
+		matchId: number;
+		label: string;
+		scheduledAt: string;
+		points: number;
+		resultStatus: string | null;
+	}>;
+}
+
+export interface MatchReport {
+	match: MatchItem;
+	pool: {
+		rules: MatchRules;
+		revenue: number;
+		bonus: number;
+		winnersShare: number;
+		prizePool: number;
+		houseShare: number;
 	};
+	result: { homeScore: number; awayScore: number } | null;
+	payments: Record<string, { orders: number; amount: number; fees: number; net: number }>;
+	distribution: Array<{
+		homeScore: number;
+		awayScore: number;
+		tickets: number;
+		bettors: number;
+		payoutPerTicket: number;
+		isResult: boolean;
+	}>;
+	bettors: Array<{
+		betId: number;
+		paymentId: number;
+		userId: number | null;
+		name: string;
+		nickname: string | null;
+		email: string;
+		phone: string;
+		homeScore: number;
+		awayScore: number;
+		tickets: number;
+		amount: number;
+		status: string;
+		resultStatus: string | null;
+		points: number;
+		createdAt: string;
+	}>;
+	prizes: Array<PrizeItem & { hasReceipt: boolean }>;
+}
+
+export interface AuditLogItem {
+	id: number;
+	action: string;
+	entityType: string;
+	entityId: string | null;
+	description: string | null;
+	metadata: Record<string, unknown> | null;
+	admin: { id: number; name: string } | null;
+	createdAt: string;
+}
+
+export interface StaffMember {
+	id: number;
+	fullName: string | null;
+	email: string;
+	role: "admin" | "operator";
+	status: "active" | "blocked";
+	twoFactorEnabled: boolean;
+	lastLoginAt: string | null;
+	createdAt: string;
 }
 
 export interface Team {

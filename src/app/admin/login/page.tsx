@@ -36,6 +36,9 @@ export default function AdminLoginPage() {
 	const router = useRouter();
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
+	// Second step for accounts with two-factor authentication.
+	const [needsCode, setNeedsCode] = useState(false);
+	const [code, setCode] = useState("");
 
 	const form = useForm<LoginForm>({
 		resolver: zodResolver(loginSchema),
@@ -46,7 +49,15 @@ export default function AdminLoginPage() {
 		setError("");
 		setLoading(true);
 		try {
-			await adminLogin(values.email, values.password);
+			const { twoFactorRequired } = await adminLogin(
+				values.email,
+				values.password,
+				needsCode ? code : undefined,
+			);
+			if (twoFactorRequired) {
+				setNeedsCode(true);
+				return;
+			}
 			router.replace("/admin");
 		} catch (err) {
 			setError(
@@ -107,17 +118,40 @@ export default function AdminLoginPage() {
 									</FormItem>
 								)}
 							/>
+							{needsCode && (
+								<div className="grid gap-2">
+									<label htmlFor="admin-2fa" className="text-sm font-medium">
+										Código de verificação
+									</label>
+									<Input
+										id="admin-2fa"
+										inputMode="numeric"
+										autoComplete="one-time-code"
+										autoFocus
+										placeholder="000000"
+										value={code}
+										onChange={(event) => setCode(event.target.value)}
+									/>
+									<p className="text-xs text-muted-foreground">
+										Use o código do app autenticador ou um código de recuperação.
+									</p>
+								</div>
+							)}
 							{error && (
 								<p className="text-sm text-destructive">{error}</p>
 							)}
-							<Button type="submit" className="w-full" disabled={loading}>
+							<Button
+								type="submit"
+								className="w-full"
+								disabled={loading || (needsCode && code.trim().length < 6)}
+							>
 								{loading ? (
 									<>
 										<Loader2 className="mr-2 size-4 animate-spin" />
 										Entrando...
 									</>
 								) : (
-									"Entrar"
+									needsCode ? "Verificar e entrar" : "Entrar"
 								)}
 							</Button>
 						</form>

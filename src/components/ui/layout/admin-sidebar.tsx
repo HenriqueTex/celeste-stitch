@@ -4,12 +4,15 @@ import Link from "next/link";
 import {
 	BarChart3,
 	CalendarDays,
+	KeyRound,
 	LayoutDashboard,
+	Medal,
+	ScrollText,
 	Settings,
 	Shield,
+	UserCog,
 	Users,
 	Wallet,
-	Medal,
 } from "lucide-react";
 import * as React from "react";
 import {
@@ -23,52 +26,26 @@ import { NavItem } from "@/components/ui/layout/nav-item";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useAdminAuth } from "@/components/AdminAuthContext";
 
+/** `adminOnly` pages handle money, settings, staff or the audit trail. */
+export const ADMIN_NAV = [
+	{ title: "Dashboard", url: "/admin", icon: LayoutDashboard, adminOnly: true },
+	{ title: "Financeiro", url: "/admin/financial", icon: BarChart3, adminOnly: true },
+	{ title: "Pagamentos", url: "/admin/payments", icon: Wallet, adminOnly: false },
+	{ title: "Prêmios", url: "/admin/prizes", icon: Medal, adminOnly: true },
+	{ title: "Partidas", url: "/admin/matches", icon: CalendarDays, adminOnly: false },
+	{ title: "Times", url: "/admin/teams", icon: Shield, adminOnly: false },
+	{ title: "Usuários", url: "/admin/users", icon: Users, adminOnly: false },
+	{ title: "Equipe", url: "/admin/staff", icon: UserCog, adminOnly: true },
+	{ title: "Auditoria", url: "/admin/audit", icon: ScrollText, adminOnly: true },
+	{ title: "Configurações", url: "/admin/settings", icon: Settings, adminOnly: true },
+	{ title: "Segurança", url: "/admin/security", icon: KeyRound, adminOnly: false },
+];
+
 export function AdminSidebar({
 	...props
 }: React.ComponentProps<typeof Sidebar>) {
-	const { admin, adminLogout } = useAdminAuth();
-	const navItems = [
-		{
-			title: "Dashboard",
-			url: "/admin",
-			icon: LayoutDashboard,
-		},
-		{
-			title: "Financeiro",
-			url: "/admin/financial",
-			icon: BarChart3,
-		},
-		{
-			title: "Pagamentos",
-			url: "/admin/payments",
-			icon: Wallet,
-		},
-		{
-			title: "Prêmios",
-			url: "/admin/prizes",
-			icon: Medal,
-		},
-		{
-			title: "Partidas",
-			url: "/admin/matches",
-			icon: CalendarDays,
-		},
-		{
-			title: "Times",
-			url: "/admin/teams",
-			icon: Shield,
-		},
-		{
-			title: "Usuários",
-			url: "/admin/users",
-			icon: Users,
-		},
-		{
-			title: "Configurações",
-			url: "/admin/settings",
-			icon: Settings,
-		},
-	];
+	const { admin, isAdmin, adminLogout } = useAdminAuth();
+	const navItems = ADMIN_NAV.filter((item) => isAdmin || !item.adminOnly);
 
 	return (
 		<Sidebar collapsible="icon" {...props}>
@@ -81,7 +58,7 @@ export function AdminSidebar({
 							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 							asChild
 						>
-							<Link href="/admin">
+							<Link href={isAdmin ? "/admin" : "/admin/matches"}>
 								{/* eslint-disable-next-line @next/next/no-img-element */}
 								<img
 									src="/brand/icon.svg"
@@ -92,7 +69,9 @@ export function AdminSidebar({
 								/>
 								<div className="grid flex-1 text-left text-sm leading-tight">
 									<span className="truncate font-semibold">Bolão Celeste</span>
-									<span className="truncate text-xs">Administração</span>
+									<span className="truncate text-xs">
+										{isAdmin ? "Administração" : "Operação"}
+									</span>
 								</div>
 							</Link>
 						</SidebarMenuButton>

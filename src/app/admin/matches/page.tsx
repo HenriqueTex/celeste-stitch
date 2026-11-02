@@ -20,6 +20,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import type { MatchItem } from "@/lib/types";
@@ -37,13 +38,15 @@ const statusConfig: Record<
 };
 
 export default function AdminMatchesPage() {
-	const { isAdminLoggedIn, isLoading, adminToken } = useAdminAuth();
+	const { isAdminLoggedIn, isAdmin, isLoading, adminToken } = useAdminAuth();
 	const router = useRouter();
 	const [tab, setTab] = useState("all");
 	const [matches, setMatches] = useState<MatchItem[]>([]);
 	const [resultDialog, setResultDialog] = useState<MatchItem | null>(null);
 	const [resultHome, setResultHome] = useState("");
 	const [resultAway, setResultAway] = useState("");
+	const [cancelDialog, setCancelDialog] = useState<MatchItem | null>(null);
+	const [cancelReason, setCancelReason] = useState("");
 
 	const loadMatches = async () => {
 		if (!adminToken) return;
@@ -75,14 +78,41 @@ export default function AdminMatchesPage() {
 		[matches, tab]
 	);
 
-	async function runAction(path: string, method = "POST", body?: Record<string, unknown>) {
-		if (!adminToken) return;
-		await apiFetch(path, {
-			method,
-			token: adminToken,
-			body: body ? JSON.stringify(body) : undefined,
-		});
-		await loadMatches();
+	async function runAction<T = unknown>(
+		path: string,
+		method = "POST",
+		body?: Record<string, unknown>,
+	): Promise<T | null> {
+		if (!adminToken) return null;
+		try {
+			return await apiFetch<T>(path, {
+				method,
+				token: adminToken,
+				body: body ? JSON.stringify(body) : undefined,
+			});
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Não foi possível concluir.");
+			return null;
+		} finally {
+			await loadMatches();
+		}
+	}
+
+	async function settle(match: MatchItem) {
+		const response = await runAction<{
+			summary: { winners: number; prizePool: number; carryover: number; alreadySettled?: boolean };
+		}>(`/admin/matches/${match.id}/settle`);
+		if (!response) return;
+		const { summary } = response;
+		if (summary.alreadySettled) toast.info("Esta partida já estava liquidada.");
+		else if (summary.winners > 0)
+			toast.success(
+				`${summary.winners} ganhador(es) dividem ${formatCurrency(summary.prizePool)}. Veja em Prêmios.`,
+			);
+		else
+			toast.success(
+				`Ninguém cravou: ${formatCurrency(summary.carryover)} acumulam para a próxima partida.`,
+			);
 	}
 
 	if (!isAdminLoggedIn) return null;
@@ -111,6 +141,7 @@ export default function AdminMatchesPage() {
 					<TabsTrigger value="open">Abertas</TabsTrigger>
 					<TabsTrigger value="closed">Fechadas</TabsTrigger>
 					<TabsTrigger value="settled">Liquidadas</TabsTrigger>
+					<TabsTrigger value="cancelled">Canceladas</TabsTrigger>
 				</TabsList>
 			</Tabs>
 
@@ -166,6 +197,11 @@ export default function AdminMatchesPage() {
 											{match.result
 												? `${match.result.homeScore} - ${match.result.awayScore}`
 												: "—"}
+											{!!match.pool?.bonus && (
+												<div className="text-xs text-amber-500">
+													+{formatCurrency(match.pool.bonus)} acumulado
+												</div>
+											)}
 										</TableCell>
 										<TableCell>
 											<DropdownMenu>
@@ -176,13 +212,18 @@ export default function AdminMatchesPage() {
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end">
 													<DropdownMenuItem asChild>
-														<Link href={`/admin/matches/${match.id}`}>Editar</Link>
+														<Link href={`/admin/matches/${match.id}/report`}>Relatório</Link>
 													</DropdownMenuItem>
-													{match.status === "draft" && (
+													{["draft", "open", "closed"].includes(match.status) && (
+														<DropdownMenuItem asChild>
+															<Link href={`/admin/matches/${match.id}`}>Editar</Link>
+														</DropdownMenuItem>
+													)}
+													{(match.status === "draft" || match.status === "closed") && (
 														<DropdownMenuItem
 															onClick={() => void runAction(`/admin/matches/${match.id}/open`)}
 														>
-															Abrir apostas
+															{match.status === "closed" ? "Reabrir apostas" : "Abrir apostas"}
 														</DropdownMenuItem>
 													)}
 													{match.status === "open" && (
@@ -192,7 +233,7 @@ export default function AdminMatchesPage() {
 															Fechar apostas
 														</DropdownMenuItem>
 													)}
-													{match.status !== "settled" && (
+													{["open", "closed", "result_registered"].includes(match.status) && (
 														<DropdownMenuItem
 															onClick={() => {
 																setResultDialog(match);
@@ -203,11 +244,20 @@ export default function AdminMatchesPage() {
 															Registrar resultado
 														</DropdownMenuItem>
 													)}
-													{match.status === "result_registered" && (
-														<DropdownMenuItem
-															onClick={() => void runAction(`/admin/matches/${match.id}/settle`)}
-														>
+													{isAdmin && match.status === "result_registered" && (
+														<DropdownMenuItem onClick={() => void settle(match)}>
 															Liquidar partida
+														</DropdownMenuItem>
+													)}
+													{isAdmin && !["settled", "cancelled"].includes(match.status) && (
+														<DropdownMenuItem
+															className="text-destructive"
+															onClick={() => {
+																setCancelReason("");
+																setCancelDialog(match);
+															}}
+														>
+															Cancelar partida
 														</DropdownMenuItem>
 													)}
 												</DropdownMenuContent>
@@ -261,6 +311,49 @@ export default function AdminMatchesPage() {
 							disabled={resultHome === "" || resultAway === ""}
 						>
 							Confirmar resultado
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+			<Dialog open={!!cancelDialog} onOpenChange={() => setCancelDialog(null)}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Cancelar partida</DialogTitle>
+						<DialogDescription>
+							{cancelDialog?.homeTeam} × {cancelDialog?.awayTeam}: os PIX pendentes são cancelados e
+							os pagamentos confirmados são estornados pelo Mercado Pago. Não dá para desfazer.
+						</DialogDescription>
+					</DialogHeader>
+					<Input
+						placeholder="Motivo (ex.: jogo adiado sem data)"
+						value={cancelReason}
+						onChange={(e) => setCancelReason(e.target.value)}
+					/>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setCancelDialog(null)}>
+							Voltar
+						</Button>
+						<Button
+							variant="destructive"
+							disabled={cancelReason.trim().length < 3}
+							onClick={async () => {
+								if (!cancelDialog) return;
+								const response = await runAction<{
+									summary: { refunded: number; pendingCancelled: number; needsAttention: unknown[] };
+								}>(`/admin/matches/${cancelDialog.id}/cancel`, "POST", { reason: cancelReason });
+								setCancelDialog(null);
+								if (!response) return;
+								const { summary } = response;
+								toast.success(
+									`Partida cancelada: ${summary.refunded} estorno(s), ${summary.pendingCancelled} PIX pendente(s) cancelado(s).`,
+								);
+								if (summary.needsAttention.length)
+									toast.warning(
+										`${summary.needsAttention.length} pedido(s) precisam de estorno manual em Pagamentos.`,
+									);
+							}}
+						>
+							Cancelar e estornar
 						</Button>
 					</DialogFooter>
 				</DialogContent>

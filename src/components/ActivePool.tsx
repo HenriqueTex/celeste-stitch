@@ -11,6 +11,9 @@ export default function ActivePool({
 }) {
 	const stats = match.stats;
 	const consensus = stats.consensus;
+	// The match keeps the share it opened with; the home payload is the fallback.
+	const winnersShare = match.rules?.winnerPoolPercentage ?? distribution?.winners;
+	const bonus = match.pool?.bonus ?? 0;
 	return (
 		<aside className="pool-summary" aria-labelledby="pool-heading">
 			<Constellation className="pool-stars" />
@@ -19,16 +22,32 @@ export default function ActivePool({
 			</h2>
 			<p className="pool-value">{formatCurrency(stats.revenue)}</p>
 			<p className="muted">em bilhetes com pagamento confirmado</p>
-			{distribution && (
+			{winnersShare !== undefined && (
 				<p className="pool-prize">
 					<Trophy size={18} aria-hidden="true" />
 					<span>
-						<strong>{distribution.winners}% vai para quem cravar o placar,</strong>{" "}
+						<strong>{winnersShare}% vai para quem cravar o placar,</strong>{" "}
 						dividido entre os bilhetes vencedores.
+						{bonus > 0 && (
+							<>
+								{" "}
+								<strong>+ {formatCurrency(bonus)} acumulados</strong> de jogos em que
+								ninguém cravou.
+							</>
+						)}
 					</span>
 				</p>
 			)}
 			<dl className="pool-numbers">
+				{match.pool && (
+					<div>
+						<dt>
+							<Trophy size={18} aria-hidden="true" />
+							Prêmio para quem cravar
+						</dt>
+						<dd>{formatCurrency(match.pool.prizePool)}</dd>
+					</div>
+				)}
 				<div>
 					<dt>
 						<Users size={18} aria-hidden="true" />
@@ -70,6 +89,9 @@ export default function ActivePool({
 							{distribution.base}% restantes seguem a distribuição do bolão.
 						</p>
 					)}
+					<p>
+						Se ninguém cravar o placar, o prêmio acumula para a próxima partida.
+					</p>
 					<p>
 						No ranking, o placar exato vale a pontuação máxima. Acertar só o
 						vencedor ou o empate vale pontos parciais. Pedidos feitos sem conta

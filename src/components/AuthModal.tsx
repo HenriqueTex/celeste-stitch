@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
 import { LogIn, UserRoundPlus, X } from "lucide-react";
 import { useAuth } from "@/components/AuthContext";
 import ClientField from "@/components/ClientField";
@@ -279,6 +280,11 @@ export default function AuthModal({
 							<p className="form-error" role="alert">
 								{error}
 							</p>
+						)}
+						{view === "login" && (
+							<Link href="/redefinir-senha" className="text-link forgot-link" onClick={onClose}>
+								Esqueci minha senha
+							</Link>
 						)}
 						<button
 							type="submit"

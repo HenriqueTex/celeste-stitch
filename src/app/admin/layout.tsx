@@ -6,6 +6,17 @@ import { AdminAuthProvider, useAdminAuth } from "@/components/AdminAuthContext";
 import { AdminSidebar } from "@/components/ui/layout/admin-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { Toaster } from "@/components/ui/sonner";
+import { ADMIN_NAV } from "@/components/ui/layout/admin-sidebar";
+
+/** Admin-only routes an operator gets bounced from. */
+function adminOnly(pathname: string) {
+	return ADMIN_NAV.some(
+		(item) =>
+			item.adminOnly &&
+			(item.url === "/admin" ? pathname === "/admin" : pathname.startsWith(item.url)),
+	);
+}
 
 export default function AdminLayout({
 	children,
@@ -22,7 +33,7 @@ export default function AdminLayout({
 }
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
-	const { isAdminLoggedIn, isLoading } = useAdminAuth();
+	const { isAdminLoggedIn, isAdmin, isLoading } = useAdminAuth();
 	const router = useRouter();
 	const pathname = usePathname();
 	const isLoginPage = pathname === "/admin/login";
@@ -30,8 +41,10 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
 		if (!isLoading && !isAdminLoggedIn && !isLoginPage) {
 			router.replace("/admin/login");
+		} else if (isAdminLoggedIn && !isAdmin && adminOnly(pathname)) {
+			router.replace("/admin/matches");
 		}
-	}, [isAdminLoggedIn, isLoading, isLoginPage, router]);
+	}, [isAdminLoggedIn, isAdmin, isLoading, isLoginPage, pathname, router]);
 
 	if (isLoading) {
 		return <div className="min-h-screen bg-background" />;
@@ -51,6 +64,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 					</header>
 				)}
 				<main className={isLoginPage ? "flex-1" : "flex-1 p-4"}>{children}</main>
+				<Toaster position="top-right" richColors />
 			</SidebarInset>
 		</SidebarProvider>
 	);
