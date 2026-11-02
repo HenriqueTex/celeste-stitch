@@ -148,7 +148,8 @@ export interface LeaderboardRow {
 }
 
 export interface ActivityFeedItem {
-	id: number;
+	/** Confirmed-feed items are one per score, keyed "event-bet". */
+	id: number | string;
 	type: string;
 	title: string;
 	description: string;

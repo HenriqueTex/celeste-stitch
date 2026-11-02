@@ -12,7 +12,7 @@ export default function ActivityTicker() {
 		"/activity-feed/confirmed",
 	);
 	const [paused, setPaused] = useState(false);
-	const items = data?.slice(0, 5) ?? [];
+	const items = data?.slice(0, 8) ?? [];
 
 	useEffect(() => {
 		const refresh = () => {
