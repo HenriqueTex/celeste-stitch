@@ -39,7 +39,7 @@ export default function MobileNav() {
 				href={href}
 				aria-current={active ? "page" : undefined}
 			>
-				<Icon size={22} aria-hidden="true" />
+				<Icon size={20} aria-hidden="true" />
 				<span>{label}</span>
 			</Link>
 		);
@@ -55,7 +55,7 @@ export default function MobileNav() {
 				}
 				onClick={goToPicker}
 			>
-				<Plus size={28} strokeWidth={2.5} aria-hidden="true" />
+				<Plus size={24} strokeWidth={2.5} aria-hidden="true" />
 			</button>
 			{items.slice(2).map(renderItem)}
 		</nav>

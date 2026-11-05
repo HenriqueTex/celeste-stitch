@@ -11,6 +11,7 @@ import { formatCpf, formatPhone } from "@/lib/format";
 type ModalView = "options" | "login" | "register";
 type FieldName =
 	| "name"
+	| "nickname"
 	| "email"
 	| "password"
 	| "confirmation"
@@ -20,6 +21,7 @@ type FieldName =
 type Values = Record<FieldName, string>;
 const emptyValues: Values = {
 	name: "",
+	nickname: "",
 	email: "",
 	password: "",
 	confirmation: "",
@@ -132,6 +134,7 @@ export default function AuthModal({
 			else
 				await register({
 					name: values.name,
+					nickname: values.nickname,
 					email: values.email,
 					password: values.password,
 					cpf: values.cpf,
@@ -226,11 +229,20 @@ export default function AuthModal({
 							</p>
 						)}
 						{view === "register" && (
-							<ClientField
-								label="Nome completo"
-								autoComplete="name"
-								{...field("name")}
-							/>
+							<>
+								<ClientField
+									label="Nome completo"
+									autoComplete="name"
+									{...field("name")}
+								/>
+								<ClientField
+									label="Apelido (opcional)"
+									autoComplete="nickname"
+									maxLength={60}
+									hint="É como seu nome aparece no site (ranking e atividade). Deixe em branco para não exibir seu nome."
+									{...field("nickname")}
+								/>
+							</>
 						)}
 						<ClientField
 							label="E-mail"

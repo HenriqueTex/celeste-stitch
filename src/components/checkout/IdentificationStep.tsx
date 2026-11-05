@@ -17,9 +17,10 @@ export interface GuestData {
 	phone: string;
 	pixKey: string;
 }
-type FieldName = keyof GuestData | "password" | "confirmation";
+type FieldName = keyof GuestData | "nickname" | "password" | "confirmation";
 const labels: Record<FieldName, string> = {
 	name: "Nome completo",
+	nickname: "Apelido (opcional)",
 	email: "E-mail",
 	cpf: "CPF",
 	phone: "Celular com DDD",
@@ -31,6 +32,7 @@ const hints: Partial<Record<FieldName, string>> = {
 	cpf: "Identifica quem fez o pagamento.",
 	pixKey: "Usada para enviar um eventual prêmio.",
 	password: "Pelo menos 8 caracteres.",
+	nickname: "É como seu nome aparece no site (ranking e atividade). Deixe em branco para não exibir seu nome.",
 };
 type FieldError = { name: FieldName; message: string } | null;
 class FieldValidationError extends Error {
@@ -130,7 +132,7 @@ export default function IdentificationStep({
 					id={id}
 					name={name}
 					value={value(name)}
-					required
+					required={name !== "nickname"}
 					aria-invalid={invalid || undefined}
 					aria-describedby={
 						invalid ? `${id}-error` : hint ? `${id}-hint` : undefined
@@ -180,7 +182,9 @@ export default function IdentificationStep({
 									? 32
 									: name === "name"
 										? 120
-										: 140
+										: name === "nickname"
+											? 60
+											: 140
 					}
 					onChange={(event) => {
 						const raw = event.target.value;
@@ -241,6 +245,7 @@ export default function IdentificationStep({
 							);
 						await register({
 							name: value("name"),
+							nickname: value("nickname"),
 							email: value("email"),
 							password: value("password"),
 							cpf: value("cpf"),
@@ -326,6 +331,7 @@ export default function IdentificationStep({
 						</p>
 					)}
 					{activeMode !== "login" && renderField("name")}
+					{activeMode === "register" && renderField("nickname")}
 					{renderField("email")}
 					{activeMode !== "guest" && renderField("password")}
 					{activeMode === "register" && renderField("confirmation")}

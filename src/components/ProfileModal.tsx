@@ -219,7 +219,7 @@ export default function ProfileModal({
 					<ClientField
 						label="Apelido"
 						autoComplete="nickname"
-						hint="É assim que você aparece no ranking."
+						hint="É como seu nome aparece no site (ranking e atividade). Deixe em branco para não exibir seu nome."
 						{...field("nickname")}
 					/>
 					<ClientField

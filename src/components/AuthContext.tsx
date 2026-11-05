@@ -21,6 +21,8 @@ interface ProfilePayload {
 
 export interface RegisterPayload {
 	name: string;
+	/** Public name; blank keeps the bettor anonymous. */
+	nickname?: string;
 	email: string;
 	password: string;
 	cpf: string;
@@ -135,6 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			method: "POST",
 			body: JSON.stringify({
 				fullName: payload.name,
+				nickname: payload.nickname?.trim() || undefined,
 				email: payload.email,
 				password: payload.password,
 				passwordConfirmation: payload.password,
